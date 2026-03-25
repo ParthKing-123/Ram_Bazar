@@ -107,21 +107,6 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
-      {/* Mobile Search - Visible only on mobile below header */}
-      <div className="md:hidden p-4 bg-white border-b border-gray-100 sticky top-16 z-40">
-        <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search className="h-5 w-5 text-gray-400" />
-          </div>
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-xl leading-5 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 text-sm"
-            placeholder={t('searchPlaceholder')}
-          />
-        </div>
-      </div>
 
       <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
         {/* Banner/Greeting */}

@@ -36,11 +36,11 @@ const ProductCard = ({ product, customClass = '' }) => {
 
         <div className="relative w-full aspect-square mb-3 rounded-xl overflow-hidden bg-gray-50">
             <img 
-                src={getImageUrl(product.image) || 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=300&h=300'} 
+                src={getImageUrl(product.image) || `https://ui-avatars.com/api/?name=${encodeURIComponent(product.name)}&background=random&color=fff&size=300`} 
                 alt={product.name}
                 className={`w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 ${isOutOfStock ? 'opacity-50 grayscale' : ''}`}
                 onError={(e) => {
-                    e.target.src = 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=300&h=300';
+                    e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(product.name)}&background=random&color=fff&size=300`;
                 }}
             />
         </div>
