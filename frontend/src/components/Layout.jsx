@@ -242,7 +242,9 @@ const Layout = () => {
       </main>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-100 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] z-50">
+      {!['/checkout', '/success'].includes(location.pathname) && (
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-100 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] z-[40]">
+
         <div className="flex items-center justify-around px-2 py-1.5">
           {navItems.map(({ to, icon: Icon, key }) => {
             const active = isActive(to);
@@ -292,6 +294,7 @@ const Layout = () => {
           )}
         </div>
       </nav>
+      )}
 
       {/* Mobile Profile Drawer/Modal */}
       {customer && profileMenuOpen && (
