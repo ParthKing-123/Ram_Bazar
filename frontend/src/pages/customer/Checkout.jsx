@@ -185,15 +185,15 @@ const Checkout = () => {
             <form onSubmit={handleEditSubmit} className="space-y-4">
               <div>
                 <label className="block text-xs text-gray-500 mb-1">Name</label>
-                <input type="text" required value={editForm.name} onChange={e => setEditForm({...editForm, name: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm" />
+                <input type="text" required value={editForm.name} onChange={e => setEditForm({...editForm, name: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white text-gray-900 outline-none focus:ring-2 focus:ring-brand-500/20" />
               </div>
               <div>
                 <label className="block text-xs text-gray-500 mb-1">Phone</label>
-                <input type="tel" required value={editForm.phone} onChange={e => setEditForm({...editForm, phone: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm" />
+                <input type="tel" required value={editForm.phone} onChange={e => setEditForm({...editForm, phone: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white text-gray-900 outline-none focus:ring-2 focus:ring-brand-500/20" />
               </div>
               <div>
                 <label className="block text-xs text-gray-500 mb-1">Address</label>
-                <textarea required rows="2" value={editForm.address} onChange={e => setEditForm({...editForm, address: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm resize-none" />
+                <textarea required rows="2" value={editForm.address} onChange={e => setEditForm({...editForm, address: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm resize-none bg-gray-50 focus:bg-white text-gray-900 outline-none focus:ring-2 focus:ring-brand-500/20" />
               </div>
               <div className="flex gap-2">
                 <button type="submit" className="flex-1 bg-brand-700 text-white rounded-xl py-2 text-sm font-medium">Save</button>
