@@ -23,6 +23,11 @@ const productSchema = new mongoose.Schema({
     default: 'Grocery',
     required: true
   },
+  variants: [{
+    unit: { type: String, required: true },
+    price: { type: Number, required: true },
+    stock: { type: Number, required: true },
+  }],
   unit: {
     type: String,
     enum: ['1 kg', '500 g', '250 g', '1 L', '500 ml', '1 Dozen', '1 Piece', '1 Pack'],

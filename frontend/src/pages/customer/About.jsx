@@ -13,10 +13,10 @@ const About = () => {
   }, []);
 
   const stats = [
-    { icon: Star,   value: '15+',   labelKey: 'yearsOfTrust',    color: 'text-amber-500',   bg: 'bg-amber-50',   border: 'border-amber-200' },
-    { icon: Heart,  value: '5000+', labelKey: 'happyCustomers',  color: 'text-rose-500',    bg: 'bg-rose-50',    border: 'border-rose-200' },
-    { icon: Shield, value: '100%',  labelKey: 'qualityAssured',  color: 'text-emerald-500', bg: 'bg-emerald-50', border: 'border-emerald-200' },
-    { icon: Truck,  value: 'Fast',  labelKey: 'delivery',        color: 'text-brand-500',   bg: 'bg-brand-50',   border: 'border-brand-200' },
+    { icon: Star, value: '20+', labelKey: 'yearsOfTrust', color: 'text-amber-500', bg: 'bg-amber-50', border: 'border-amber-200' },
+    { icon: Heart, value: '10000+', labelKey: 'happyCustomers', color: 'text-rose-500', bg: 'bg-rose-50', border: 'border-rose-200' },
+    { icon: Shield, value: '100%', labelKey: 'qualityAssured', color: 'text-emerald-500', bg: 'bg-emerald-50', border: 'border-emerald-200' },
+    { icon: Truck, value: 'Fast', labelKey: 'delivery', color: 'text-brand-500', bg: 'bg-brand-50', border: 'border-brand-200' },
   ];
 
   const categories = [
@@ -35,7 +35,7 @@ const About = () => {
 
   return (
     <div className="min-h-screen bg-[#F8F9FA] pb-20 font-sans selection:bg-brand-200 selection:text-brand-900">
-      
+
       {/* Decorative Background Elements */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-brand-200/30 rounded-full blur-3xl" />
@@ -46,7 +46,7 @@ const About = () => {
       <div className="relative overflow-hidden bg-gradient-to-br from-brand-800 via-brand-700 to-emerald-800 z-10 shadow-2xl rounded-b-[2.5rem] lg:rounded-b-[4rem]">
         {/* Abstract Pattern overlay */}
         <div className="absolute inset-0 opacity-[0.1]" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 20.5V18H0v-2h20v-2H0v-2h20v-2H0V8h20V6H0V4h20V2H0V0h22v20h2V0h2v20h2V0h2v20h2V0h2v20h2V0h2v20h2v2H20v-1.5zM0 20h2v20H0V20zm4 0h2v20H4V20zm4 0h2v20H8V20zm4 0h2v20h-2V20zm4 0h2v20h-2V20zm4 4v-2h20v2H20v2h20v2H20v2h20v2H20v2h20v2H20v2h20v2H20v2h20v-2H20v-2h20v-2H20v-2h20v-2H20v-2h20v-2H20z' fill='%23ffffff' fill-opacity='1' fill-rule='evenodd'/%3E%3C/svg%3E")` }} />
-        
+
         <div className="relative px-6 pt-10 pb-16 max-w-4xl mx-auto flex flex-col items-center text-center">
           <button
             onClick={() => navigate('/')}
@@ -57,19 +57,19 @@ const About = () => {
           </button>
 
           <div className={`transform transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'} mt-8`}>
-            <div className="inline-flex items-center justify-center p-1.5 bg-white/10 backdrop-blur-md rounded-2xl mb-6 shadow-lg border border-white/20">
-              <div className="w-20 h-20 bg-white rounded-xl flex items-center justify-center shadow-inner">
-                <span className="text-brand-700 font-black text-4xl tracking-tighter">RB</span>
+            <div className="inline-flex items-center justify-center p-1.5 bg-white/10 backdrop-blur-md rounded-3xl mb-6 shadow-lg border border-white/20">
+              <div className="w-28 h-28 bg-white rounded-2xl flex items-center justify-center shadow-inner overflow-hidden">
+                <img src="/logo.jpg" alt="Padmavati super bazar Logo" className="w-full h-full object-cover" />
               </div>
             </div>
-            
+
             <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight leading-tight">
-              Ram Bazaar
+              Padmavati super bazar
             </h1>
             <p className="text-brand-100 text-lg md:text-xl mt-3 font-medium max-w-md mx-auto leading-relaxed">
-              Serving the Pethvadgaon community with quality products since 2009.
+              Serving the Pethvadgaon community with quality products since 2004.
             </p>
-            
+
             <div className="flex items-center justify-center gap-2 mt-6 bg-white/10 w-fit mx-auto px-5 py-2.5 rounded-full backdrop-blur-sm border border-white/10">
               <div className="flex">
                 {[...Array(5)].map((_, i) => (
@@ -83,7 +83,7 @@ const About = () => {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 relative z-10 -mt-10 space-y-8">
-        
+
         {/* Stats Section */}
         <div className={`grid grid-cols-2 md:grid-cols-4 gap-4 transform transition-all duration-1000 delay-100 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
           {stats.map(({ icon: Icon, value, labelKey, color, bg, border }, idx) => (
@@ -132,7 +132,7 @@ const About = () => {
 
         {/* Grid for Location and Contact */}
         <div className="grid md:grid-cols-2 gap-8">
-          
+
           {/* Location & Hours */}
           <div className={`space-y-8 transform transition-all duration-1000 delay-400 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
             <div className="bg-white rounded-[2rem] p-6 shadow-xl shadow-gray-200/40 border border-gray-100 relative overflow-hidden group">
@@ -143,10 +143,10 @@ const About = () => {
                 </div>
                 <h2 className="text-xl font-bold text-gray-900">{t('findUs')}</h2>
               </div>
-              
+
               <div className="w-full h-48 rounded-2xl overflow-hidden border border-gray-100 mb-5 relative group-hover:shadow-md transition-shadow">
                 <iframe
-                  title="Ram Bazaar Location"
+                  title="Padmavati super bazar Location"
                   src="https://maps.google.com/maps?q=Pethvadgaon,Maharashtra&t=&z=14&ie=UTF8&iwloc=&output=embed"
                   width="100%"
                   height="100%"
@@ -156,9 +156,9 @@ const About = () => {
                   className="absolute inset-0 grayscale-[0.2] contrast-[1.1]"
                 />
               </div>
-              
+
               <div className="bg-[#F8F9FA] rounded-2xl p-4 mb-5 border border-gray-100">
-                <h3 className="font-bold text-gray-900">Ram Bazaar</h3>
+                <h3 className="font-bold text-gray-900">Padmavati super bazar</h3>
                 <p className="text-gray-500 text-sm mt-1 flex items-start gap-2">
                   <MapPin className="w-4 h-4 mt-0.5 shrink-0 text-red-500" />
                   {t('pethvadgaon')}
@@ -185,16 +185,16 @@ const About = () => {
               <div className="space-y-3">
                 <div className="flex justify-between items-center p-4 bg-[#F8F9FA] rounded-xl border border-gray-100">
                   <span className="text-sm font-bold text-gray-700 flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-brand-500" /> {t('monToSat')}
+                    <span className="w-2 h-2 rounded-full bg-brand-500" /> {t('Monday To Sunday')}
                   </span>
-                  <span className="text-sm font-black text-brand-700 tracking-wide">8:00 AM – 9:00 PM</span>
+                  <span className="text-sm font-black text-brand-700 tracking-wide">9:00 AM – 8:00 PM</span>
                 </div>
-                <div className="flex justify-between items-center p-4 bg-[#F8F9FA] rounded-xl border border-gray-100">
+                {/* <div className="flex justify-between items-center p-4 bg-[#F8F9FA] rounded-xl border border-gray-100">
                   <span className="text-sm font-bold text-gray-700 flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-gray-300" /> {t('sunday')}
                   </span>
                   <span className="text-sm font-black text-gray-500 tracking-wide">9:00 AM – 6:00 PM</span>
-                </div>
+                </div> */}
                 <div className="text-center pt-2">
                   <p className="inline-flex items-center gap-1.5 px-3 py-1 bg-green-50 text-green-700 text-xs font-bold rounded-lg uppercase tracking-wider">
                     <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
@@ -213,7 +213,7 @@ const About = () => {
               </div>
               <h2 className="text-xl font-bold text-gray-900">{t('forMoreInfo')}</h2>
             </div>
-            
+
             <p className="text-sm text-gray-500 mb-6 font-medium">Have questions about your order or our products? We're here to help.</p>
 
             <div className="space-y-4">
@@ -225,7 +225,7 @@ const About = () => {
                       <p className="text-brand-600 text-xs font-bold uppercase tracking-wider mt-0.5">{role}</p>
                     </div>
                   </div>
-                  
+
                   <div className="flex gap-3">
                     <a
                       href={`tel:${phone}`}
@@ -252,9 +252,9 @@ const About = () => {
         {/* Footer Note */}
         <div className={`text-center py-8 transform transition-all duration-1000 delay-700 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
           <div className="inline-flex items-center justify-center p-2 bg-gray-100 rounded-2xl mb-4">
-            <span className="text-gray-900 font-bold px-4 tracking-tight">Ram Bazaar</span>
+            <span className="text-gray-900 font-bold px-4 tracking-tight">Padmavati super bazar</span>
           </div>
-          <p className="text-sm text-gray-500 font-medium">© {new Date().getFullYear()} Ram Bazaar, Pethvadgaon.</p>
+          <p className="text-sm text-gray-500 font-medium">© {new Date().getFullYear()} Padmavati super bazar, Pethvadgaon.</p>
           <p className="text-sm text-gray-500 mt-1 flex items-center justify-center gap-1 font-medium">
             Made with <Heart className="w-4 h-4 text-red-500 fill-red-500" /> for the community
           </p>

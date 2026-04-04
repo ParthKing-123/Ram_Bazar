@@ -10,11 +10,9 @@ const ProductsTab = () => {
   
   const [formData, setFormData] = useState({
     name: '',
-    price: '',
-    stock: '',
     image: '',
     category: 'Grocery',
-    unit: '1 Piece'
+    variants: [{ unit: '1 Piece', price: '', stock: '' }]
   });
 
   const [inputType, setInputType] = useState('url'); // 'url' or 'file'
@@ -40,17 +38,17 @@ const ProductsTab = () => {
       setEditingProduct(product);
       setFormData({
         name: product.name,
-        price: product.price,
-        stock: product.stock,
         image: product.image,
         category: product.category || 'Grocery',
-        unit: product.unit || '1 Piece'
+        variants: product.variants && product.variants.length > 0 
+          ? product.variants 
+          : [{ unit: product.unit || '1 Piece', price: product.price || 0, stock: product.stock || 0 }]
       });
       setInputType('url');
       setSelectedFile(null);
     } else {
       setEditingProduct(null);
-      setFormData({ name: '', price: '', stock: '', image: '', category: 'Grocery', unit: '1 Piece' });
+      setFormData({ name: '', image: '', category: 'Grocery', variants: [{ unit: '1 Piece', price: '', stock: '' }] });
       setInputType('url');
       setSelectedFile(null);
     }
@@ -61,6 +59,22 @@ const ProductsTab = () => {
     setIsModalOpen(false);
     setEditingProduct(null);
     setSelectedFile(null);
+  };
+
+  const addVariant = () => {
+    setFormData({ ...formData, variants: [...formData.variants, { unit: '1 Piece', price: '', stock: '' }] });
+  };
+
+  const removeVariant = (index) => {
+    const newVariants = [...formData.variants];
+    newVariants.splice(index, 1);
+    setFormData({ ...formData, variants: newVariants });
+  };
+
+  const updateVariant = (index, field, value) => {
+    const newVariants = [...formData.variants];
+    newVariants[index][field] = value;
+    setFormData({ ...formData, variants: newVariants });
   };
 
   const handleSubmit = async (e) => {
@@ -79,11 +93,20 @@ const ProductsTab = () => {
             }
         });
         
-        // The backend returns the image path as a plain string, e.g. "/uploads/image-123.jpg"
-        finalImageUrl = `http://localhost:5000${uploadRes.data}`;
+        // The backend returns { imageUrl: "/uploads/..." }
+        finalImageUrl = uploadRes.data.imageUrl;
       }
 
-      const productPayload = { ...formData, image: finalImageUrl };
+      const formattedVariants = formData.variants.map(v => ({
+         unit: v.unit,
+         price: Number(v.price) || 0,
+         stock: Number(v.stock) || 0
+      }));
+      
+      const rootPrice = formattedVariants[0]?.price || 0;
+      const rootStock = formattedVariants[0]?.stock || 0;
+      const rootUnit = formattedVariants[0]?.unit || '1 Piece';
+      const productPayload = { ...formData, variants: formattedVariants, price: rootPrice, stock: rootStock, unit: rootUnit, image: finalImageUrl };
 
       if (editingProduct) {
         await api.put(`/products/${editingProduct._id}`, productPayload);
@@ -154,13 +177,17 @@ const ProductsTab = () => {
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-                  ₹{product.price} <span className="text-gray-500 font-normal">/ {product.unit || '1 Piece'}</span>
+                  {product.variants && product.variants.length > 0 ? (
+                    <>₹{product.variants[0].price} <span className="text-gray-500 font-normal">/ {product.variants[0].unit}</span> {product.variants.length > 1 && <span className="text-xs text-brand-600 ml-1">(+{product.variants.length - 1})</span>}</>
+                  ) : (
+                    <>₹{product.price} <span className="text-gray-500 font-normal">/ {product.unit || '1 Piece'}</span></>
+                  )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    product.stock > 10 ? 'bg-green-100 text-green-800' : product.stock > 0 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
+                    (product.variants && product.variants.length > 0 ? product.variants[0].stock : product.stock) > 10 ? 'bg-green-100 text-green-800' : (product.variants && product.variants.length > 0 ? product.variants[0].stock : product.stock) > 0 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
                   }`}>
-                    {product.stock} in stock
+                    {product.variants && product.variants.length > 0 ? product.variants.reduce((acc, v) => acc + v.stock, 0) : product.stock} in stock
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -211,37 +238,50 @@ const ProductsTab = () => {
                     <input type="text" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="mt-1 block w-full border border-gray-200 rounded-xl shadow-sm py-2 px-3 focus:outline-none focus:ring-gray-900 focus:border-gray-900 sm:text-sm bg-gray-50 focus:bg-white transition-colors" />
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Price (₹)</label>
-                        <input type="number" required min="0" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} className="mt-1 block w-full border border-gray-200 rounded-xl shadow-sm py-2 px-3 focus:outline-none focus:ring-gray-900 focus:border-gray-900 sm:text-sm bg-gray-50 focus:bg-white transition-colors" />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Stock</label>
-                        <input type="number" required min="0" value={formData.stock} onChange={e => setFormData({...formData, stock: e.target.value})} className="mt-1 block w-full border border-gray-200 rounded-xl shadow-sm py-2 px-3 focus:outline-none focus:ring-gray-900 focus:border-gray-900 sm:text-sm bg-gray-50 focus:bg-white transition-colors" />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Category & Quantity List</label>
-                    <div className="grid grid-cols-2 gap-4 mt-1">
-                        <select required value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} className="block w-full border border-gray-200 rounded-xl shadow-sm py-2 px-3 focus:outline-none focus:ring-gray-900 focus:border-gray-900 sm:text-sm bg-gray-50 focus:bg-white transition-colors">
+                        <label className="block text-sm font-medium text-gray-700">Category</label>
+                        <select required value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} className="mt-1 block w-full border border-gray-200 rounded-xl shadow-sm py-2 px-3 focus:outline-none focus:ring-gray-900 focus:border-gray-900 sm:text-sm bg-gray-50 focus:bg-white transition-colors">
                           <option value="Grocery">Grocery</option>
                           <option value="Provision">Provision</option>
                           <option value="Household">Household</option>
                           <option value="Loose Grocery">Loose Grocery</option>
                           <option value="Travel Accessories">Travel Accessories</option>
                         </select>
-                        <select required value={formData.unit} onChange={e => setFormData({...formData, unit: e.target.value})} className="block w-full border border-gray-200 rounded-xl shadow-sm py-2 px-3 focus:outline-none focus:ring-gray-900 focus:border-gray-900 sm:text-sm bg-gray-50 focus:bg-white transition-colors">
-                          <option value="1 kg">1 kg</option>
-                          <option value="500 g">500 g</option>
-                          <option value="250 g">250 g</option>
-                          <option value="1 L">1 L</option>
-                          <option value="500 ml">500 ml</option>
-                          <option value="1 Dozen">1 Dozen</option>
-                          <option value="1 Piece">1 Piece</option>
-                          <option value="1 Pack">1 Pack</option>
-                        </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between items-center mt-4 mb-2">
+                        <label className="block text-sm font-medium text-gray-700">Quantity Variants & Pricing</label>
+                        <button type="button" onClick={addVariant} className="text-xs bg-brand-50 text-brand-700 font-semibold px-2 py-1 rounded shadow-sm flex items-center hover:bg-brand-100 transition-colors">
+                            <Plus className="w-3 h-3 mr-1" /> Add
+                        </button>
+                    </div>
+                    
+                    <div className="space-y-3">
+                        {formData.variants.map((variant, index) => (
+                          <div key={index} className="flex items-center gap-2 bg-gray-50 p-2 rounded-xl border border-gray-100 overflow-x-auto">
+                              <select required value={variant.unit} onChange={e => updateVariant(index, 'unit', e.target.value)} className="w-28 shrink-0 border border-gray-200 rounded-md shadow-sm py-1.5 px-2 focus:outline-none focus:ring-gray-900 focus:border-gray-900 text-sm bg-white">
+                                <option value="1 kg">1 kg</option>
+                                <option value="500 g">500 g</option>
+                                <option value="250 g">250 g</option>
+                                <option value="1 L">1 L</option>
+                                <option value="500 ml">500 ml</option>
+                                <option value="1 Dozen">1 Dozen</option>
+                                <option value="1 Piece">1 Piece</option>
+                                <option value="1 Pack">1 Pack</option>
+                              </select>
+                              <input type="number" required min="0" placeholder="Price (₹)" value={variant.price} onChange={e => updateVariant(index, 'price', e.target.value)} className="w-24 shrink-0 border border-gray-200 rounded-md shadow-sm py-1.5 px-2 focus:outline-none focus:ring-gray-900 focus:border-gray-900 text-sm bg-white" />
+                              <input type="number" required min="0" placeholder="Stock" value={variant.stock} onChange={e => updateVariant(index, 'stock', e.target.value)} className="w-20 shrink-0 border border-gray-200 rounded-md shadow-sm py-1.5 px-2 focus:outline-none focus:ring-gray-900 focus:border-gray-900 text-sm bg-white" />
+                              
+                              {formData.variants.length > 1 && (
+                                  <button type="button" onClick={() => removeVariant(index)} className="text-red-500 hover:text-red-700 p-1">
+                                      <Trash2 className="w-4 h-4" />
+                                  </button>
+                              )}
+                          </div>
+                        ))}
                     </div>
                   </div>
 
@@ -265,7 +305,7 @@ const ProductsTab = () => {
                         <span className="inline-flex items-center px-3 rounded-l-xl border border-r-0 border-gray-200 bg-gray-50 text-gray-500 sm:text-sm">
                             <ImageIcon className="h-4 w-4" />
                         </span>
-                        <input type="url" required={!editingProduct} value={formData.image} onChange={e => setFormData({...formData, image: e.target.value})} className="flex-1 block w-full border border-gray-200 rounded-none rounded-r-xl py-2 px-3 focus:outline-none focus:ring-gray-900 focus:border-gray-900 sm:text-sm bg-gray-50 focus:bg-white transition-colors" placeholder="https://example.com/image.jpg" />
+                        <input type="text" required={!editingProduct} value={formData.image} onChange={e => setFormData({...formData, image: e.target.value})} className="flex-1 block w-full border border-gray-200 rounded-none rounded-r-xl py-2 px-3 focus:outline-none focus:ring-gray-900 focus:border-gray-900 sm:text-sm bg-gray-50 focus:bg-white transition-colors" placeholder="https://example.com/image.jpg or /uploads/..." />
                         </div>
                     ) : (
                         <div className="mt-1">

@@ -16,6 +16,8 @@ const orderSchema = new mongoose.Schema({
       name: { type: String, required: true },
       quantity: { type: Number, required: true },
       price: { type: Number, required: true },
+      image: { type: String },
+      unit: { type: String },
     }
   ],
   total: {
@@ -31,6 +33,14 @@ const orderSchema = new mongoose.Schema({
     type: String,
     enum: ['UPI', 'COD'],
     default: 'COD'
+  },
+  deliveryRating: {
+    type: Number,
+    min: 1,
+    max: 5
+  },
+  deliveryFeedback: {
+    type: String
   }
 }, { timestamps: true });
 

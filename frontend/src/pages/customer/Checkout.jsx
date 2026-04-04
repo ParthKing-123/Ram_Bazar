@@ -9,7 +9,7 @@ const BACKEND_URL = import.meta.env.VITE_API_URL
   ? import.meta.env.VITE_API_URL.replace('/api', '')
   : 'http://localhost:5000';
 
-const FREE_DELIVERY_THRESHOLD = 200;
+const FREE_DELIVERY_THRESHOLD = 500;
 const DELIVERY_FEE = 30;
 
 // ─── Coupon Definitions ─────────────────────────────────────────────────────
@@ -123,9 +123,9 @@ const Checkout = () => {
 
       if (paymentMethod === 'COD') {
         const adminPhone = '919028535600';
-        const itemList = cart.map(item => `${item.quantity}x ${item.name}`).join(', ');
+        const itemList = cart.map(item => `${item.quantity}x ${item.name} (${item.unit || '1 Piece'})`).join(', ');
         const couponLine = appliedCoupon ? `\nCoupon: ${appliedCoupon.code} (−₹${discount})` : '';
-        const message = `Hi Ram Bazar, I have placed an order!\n\nName: ${customer.name}\nPhone: ${customer.phone}\nAddress: ${customer.address}\n\nItems: ${itemList}${couponLine}\n\nTotal: ₹${finalTotal}\nPayment Method: Cash on Delivery\n\nPlease confirm my order.`;
+        const message = `Hi Padmavati super bazar, I have placed an order!\n\nName: ${customer.name}\nPhone: ${customer.phone}\nAddress: ${customer.address}\n\nItems: ${itemList}${couponLine}\n\nTotal: ₹${finalTotal}\nPayment Method: Cash on Delivery\n\nPlease confirm my order.`;
         window.open(`https://wa.me/${adminPhone}?text=${encodeURIComponent(message)}`, '_blank');
       }
 
@@ -185,15 +185,15 @@ const Checkout = () => {
             <form onSubmit={handleEditSubmit} className="space-y-4">
               <div>
                 <label className="block text-xs text-gray-500 mb-1">Name</label>
-                <input type="text" required value={editForm.name} onChange={e => setEditForm({...editForm, name: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white text-gray-900 outline-none focus:ring-2 focus:ring-brand-500/20" />
+                <input type="text" required value={editForm.name} onChange={e => setEditForm({ ...editForm, name: e.target.value })} className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white text-gray-900 outline-none focus:ring-2 focus:ring-brand-500/20" />
               </div>
               <div>
                 <label className="block text-xs text-gray-500 mb-1">Phone</label>
-                <input type="tel" required value={editForm.phone} onChange={e => setEditForm({...editForm, phone: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white text-gray-900 outline-none focus:ring-2 focus:ring-brand-500/20" />
+                <input type="tel" required value={editForm.phone} onChange={e => setEditForm({ ...editForm, phone: e.target.value })} className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white text-gray-900 outline-none focus:ring-2 focus:ring-brand-500/20" />
               </div>
               <div>
                 <label className="block text-xs text-gray-500 mb-1">Address</label>
-                <textarea required rows="2" value={editForm.address} onChange={e => setEditForm({...editForm, address: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm resize-none bg-gray-50 focus:bg-white text-gray-900 outline-none focus:ring-2 focus:ring-brand-500/20" />
+                <textarea required rows="2" value={editForm.address} onChange={e => setEditForm({ ...editForm, address: e.target.value })} className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm resize-none bg-gray-50 focus:bg-white text-gray-900 outline-none focus:ring-2 focus:ring-brand-500/20" />
               </div>
               <div className="flex gap-2">
                 <button type="submit" className="flex-1 bg-brand-700 text-white rounded-xl py-2 text-sm font-medium">Save</button>
@@ -223,7 +223,7 @@ const Checkout = () => {
           <h2 className="font-bold text-gray-900 mb-4">{cart.length} item{cart.length > 1 ? 's' : ''} in cart</h2>
           <div className="space-y-4">
             {cart.map((item) => (
-              <div key={item.product} className="flex gap-4 items-center">
+              <div key={item.cartItemId || item.product} className="flex gap-4 items-center">
                 <img
                   src={getImageUrl(item.image) || 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=80'}
                   alt={item.name}
@@ -232,15 +232,17 @@ const Checkout = () => {
                 />
                 <div className="flex-1">
                   <h3 className="font-medium text-sm text-gray-900 line-clamp-1">{item.name}</h3>
-                  <div className="text-brand-700 font-bold text-sm mt-1">₹{item.price}</div>
+                  <div className="text-brand-700 font-bold text-sm mt-1">
+                      ₹{item.price} <span className="text-gray-400 font-normal text-xs">/ {item.unit || '1 Piece'}</span>
+                  </div>
                 </div>
                 <div className="flex flex-col items-end gap-2">
                   <div className="flex items-center bg-gray-50 rounded-lg border border-gray-200">
-                    <button onClick={() => updateQuantity(item.product, item.quantity - 1)} className="p-1.5 hover:bg-gray-100 rounded-l-lg transition-colors">
+                    <button onClick={() => updateQuantity(item.cartItemId || item.product, item.quantity - 1)} className="p-1.5 hover:bg-gray-100 rounded-l-lg transition-colors">
                       {item.quantity === 1 ? <Trash2 className="h-4 w-4 text-red-500" /> : <Minus className="h-4 w-4 text-gray-600" />}
                     </button>
                     <span className="font-semibold text-sm px-2 w-8 text-center">{item.quantity}</span>
-                    <button onClick={() => updateQuantity(item.product, item.quantity + 1)} className="p-1.5 hover:bg-gray-100 rounded-r-lg transition-colors">
+                    <button onClick={() => updateQuantity(item.cartItemId || item.product, item.quantity + 1)} className="p-1.5 hover:bg-gray-100 rounded-r-lg transition-colors">
                       <Plus className="h-4 w-4 text-brand-600" />
                     </button>
                   </div>

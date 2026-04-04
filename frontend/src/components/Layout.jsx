@@ -45,11 +45,11 @@ const Layout = () => {
 
             {/* Logo */}
             <Link to="/" className="flex items-center gap-2.5 shrink-0">
-              <div className="w-9 h-9 bg-gradient-to-br from-brand-600 to-brand-800 rounded-xl flex items-center justify-center shadow-md shadow-brand-200">
-                <span className="text-white font-black text-xl leading-none">R</span>
+              <div className="w-10 h-10 rounded-[10px] flex items-center justify-center shadow-sm overflow-hidden shrink-0">
+                <img src="/logo.jpg" alt="Logo" className="w-full h-full object-cover" />
               </div>
               <div className="hidden sm:block">
-                <span className="font-black text-xl tracking-tight text-brand-900">Ram Bazar</span>
+                <span className="font-black text-xl tracking-tight text-brand-900">Padmavati super bazar</span>
                 <span className="block text-[10px] leading-none text-gray-400 font-medium tracking-wider uppercase">Pethvadgaon</span>
               </div>
             </Link>

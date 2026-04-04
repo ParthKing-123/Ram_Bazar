@@ -17,7 +17,7 @@ export const getProducts = async (req, res) => {
 // @access  Admin
 export const createProduct = async (req, res) => {
   try {
-    const { name, price, stock, image, category, unit } = req.body;
+    const { name, price, stock, image, category, unit, variants } = req.body;
 
     const product = new Product({
       name,
@@ -25,7 +25,8 @@ export const createProduct = async (req, res) => {
       stock,
       image,
       category,
-      unit
+      unit,
+      variants
     });
 
     const createdProduct = await product.save();
@@ -40,7 +41,7 @@ export const createProduct = async (req, res) => {
 // @access  Admin
 export const updateProduct = async (req, res) => {
   try {
-    const { name, price, stock, image, category, unit } = req.body;
+    const { name, price, stock, image, category, unit, variants } = req.body;
 
     const product = await Product.findById(req.params.id);
 
@@ -51,6 +52,7 @@ export const updateProduct = async (req, res) => {
       product.image = image || product.image;
       if (category) product.category = category;
       if (unit) product.unit = unit;
+      if (variants) product.variants = variants;
 
       const updatedProduct = await product.save();
       res.json(updatedProduct);

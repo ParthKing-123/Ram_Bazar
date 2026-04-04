@@ -1,5 +1,16 @@
 import React, { useState, useEffect } from 'react';
+import { Star } from 'lucide-react';
 import api from '../../services/api';
+
+const BACKEND_URL = import.meta.env.VITE_API_URL
+    ? import.meta.env.VITE_API_URL.replace('/api', '')
+    : 'http://localhost:5000';
+
+const getImageUrl = (url) => {
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+    return `${BACKEND_URL}${url}`;
+};
 
 const OrdersTab = () => {
   const [orders, setOrders] = useState([]);
@@ -33,7 +44,7 @@ const OrdersTab = () => {
           let message = '';
           
           if (newStatus === 'Confirmed') {
-              message = `*YOO !! THE ORDER IS CONFIRMEND*\n\nYour order #${order._id.substring(order._id.length - 6).toUpperCase()} has been accepted by Ram Bazar.`;
+              message = `*YOO !! THE ORDER IS CONFIRMEND*\n\nYour order #${order._id.substring(order._id.length - 6).toUpperCase()} has been accepted by Padmavati super bazar.`;
           } else if (newStatus === 'Out for Delivery') {
               message = `*OUT FOR DELIVERY*\n\nYour order #${order._id.substring(order._id.length - 6).toUpperCase()} is on its way to you!`;
           }
@@ -106,11 +117,22 @@ const OrdersTab = () => {
 
                            <div>
                              <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Order Summary</h4>
-                             <ul className="space-y-2 text-sm text-gray-600 max-h-32 overflow-y-auto pr-2">
+                             <ul className="space-y-3 text-sm text-gray-600 max-h-48 overflow-y-auto pr-2">
                                  {order.items.map((item, index) => (
                                      <li key={index} className="flex justify-between items-start">
-                                         <span><span className="font-medium text-gray-900">{item.quantity}x</span> {item.name}</span>
-                                         <span className="font-medium">₹{item.price * item.quantity}</span>
+                                         <div className="flex gap-2 items-center">
+                                             <img
+                                                 src={getImageUrl(item.image) || 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=80'}
+                                                 alt={item.name}
+                                                 className="w-10 h-10 rounded shadow-sm object-cover bg-gray-50 shrink-0"
+                                                 onError={e => { e.target.src = 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=80'; }}
+                                             />
+                                             <div>
+                                                 <div className="font-medium text-gray-900 leading-tight"><span className="text-brand-600 text-xs mr-1">{item.quantity}x</span>{item.name}</div>
+                                                 <div className="text-xs text-gray-400 mt-0.5">{item.unit || '1 Piece'}</div>
+                                             </div>
+                                         </div>
+                                         <span className="font-medium whitespace-nowrap ml-2">₹{item.price * item.quantity}</span>
                                      </li>
                                  ))}
                              </ul>
@@ -147,6 +169,22 @@ const OrdersTab = () => {
                              <span className="text-sm text-gray-400 font-medium italic">Order closed ({order.status})</span>
                          )}
                      </div>
+                     
+                     {/* Rating Display */}
+                     {order.deliveryRating && (
+                         <div className="mt-4 pt-4 border-t border-gray-100 bg-green-50/50 rounded-xl p-3">
+                             <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Customer Feedback</h4>
+                             <div className="flex items-center gap-1 mb-1">
+                                 {[1, 2, 3, 4, 5].map(star => (
+                                     <Star key={star} className={`w-4 h-4 ${star <= order.deliveryRating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`} />
+                                 ))}
+                                 <span className="text-xs font-bold text-gray-700 ml-2">{order.deliveryRating} / 5</span>
+                             </div>
+                             {order.deliveryFeedback && (
+                                 <p className="text-sm text-gray-700 italic mt-1 bg-white p-2 rounded border border-green-100">"{order.deliveryFeedback}"</p>
+                             )}
+                         </div>
+                     )}
                  </div>
              ))
           )}

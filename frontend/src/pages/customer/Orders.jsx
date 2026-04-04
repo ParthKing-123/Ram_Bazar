@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Package, Clock, CheckCircle, XCircle, FileText, ChevronLeft } from 'lucide-react';
+import { Package, Clock, CheckCircle, XCircle, FileText, ChevronLeft, Star } from 'lucide-react';
 import useCustomerStore from '../../store/useCustomerStore';
 import api from '../../services/api';
 
@@ -9,6 +9,17 @@ const Orders = () => {
   const { customer } = useCustomerStore();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [ratingLoading, setRatingLoading] = useState(false);
+
+  const BACKEND_URL = import.meta.env.VITE_API_URL
+    ? import.meta.env.VITE_API_URL.replace('/api', '')
+    : 'http://localhost:5000';
+
+  const getImageUrl = (url) => {
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+    return `${BACKEND_URL}${url}`;
+  };
 
   useEffect(() => {
     if (!customer) {
@@ -29,6 +40,20 @@ const Orders = () => {
 
     fetchOrders();
   }, [customer, navigate]);
+
+  const handleRateOrder = async (orderId, rating, feedback) => {
+    setRatingLoading(true);
+    try {
+      await api.put(`/orders/${orderId}/rate`, { deliveryRating: rating, deliveryFeedback: feedback });
+      // Update local state to reflect rating
+      setOrders(orders.map(o => o._id === orderId ? { ...o, deliveryRating: rating, deliveryFeedback: feedback } : o));
+    } catch (error) {
+      console.error('Failed to rate order', error);
+      alert('Failed to submit rating. Please try again.');
+    } finally {
+      setRatingLoading(false);
+    }
+  };
 
   const getStatusConfig = (status) => {
     switch (status) {
@@ -83,13 +108,24 @@ const Orders = () => {
                   </div>
               </div>
 
-              <div className="space-y-2 border-t border-gray-100 pt-4 text-sm mt-2">
+              <div className="space-y-3 border-t border-gray-100 pt-4 mt-2">
                   {order.items.map((item, index) => (
-                      <div key={index} className="flex justify-between items-center text-gray-600">
-                          <span className="flex gap-2">
-                              <span className="font-medium text-gray-900">{item.quantity}x</span> 
-                              <span>{item.name}</span>
-                          </span>
+                      <div key={index} className="flex gap-3 items-center">
+                          <img
+                            src={getImageUrl(item.image) || 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=80'}
+                            alt={item.name}
+                            className="w-12 h-12 rounded-lg object-cover bg-gray-50 border border-gray-100 shrink-0"
+                            onError={e => { e.target.src = 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=80'; }}
+                          />
+                          <div className="flex-1">
+                              <h4 className="font-medium text-sm text-gray-900 line-clamp-1">{item.name}</h4>
+                              <div className="text-gray-500 text-xs mt-0.5">
+                                  {item.quantity} x {item.unit || '1 Piece'}
+                              </div>
+                          </div>
+                          <div className="font-bold text-gray-900 text-sm">
+                              ₹{item.price * item.quantity}
+                          </div>
                       </div>
                   ))}
               </div>
@@ -100,6 +136,71 @@ const Orders = () => {
                       <span className="text-brand-600">Payment to be collected</span>
                   )}
               </div>
+
+              {/* Rating Section for Delivered Orders */}
+              {order.status === 'Delivered' && (
+                  <div className="mt-4 pt-4 border-t border-gray-100">
+                      {order.deliveryRating ? (
+                          <div className="bg-green-50 p-3 rounded-xl border border-green-100">
+                              <div className="flex items-center gap-1 mb-1">
+                                  <span className="text-xs font-bold text-green-800 mr-2">Your Rating:</span>
+                                  {[1, 2, 3, 4, 5].map(star => (
+                                      <Star key={star} className={`w-4 h-4 ${star <= order.deliveryRating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`} />
+                                  ))}
+                              </div>
+                              {order.deliveryFeedback && (
+                                  <p className="text-xs text-gray-600 italic mt-1">"{order.deliveryFeedback}"</p>
+                              )}
+                          </div>
+                      ) : (
+                          <OrderRatingForm orderId={order._id} onSubmitRating={(rating, feedback) => handleRateOrder(order._id, rating, feedback)} />
+                      )}
+                  </div>
+              )}
+          </div>
+      );
+  };
+
+  // Inline Rating Form Component
+  const OrderRatingForm = ({ orderId, onSubmitRating }) => {
+      const [rating, setRating] = useState(0);
+      const [hoveredRating, setHoveredRating] = useState(0);
+      const [feedback, setFeedback] = useState('');
+
+      return (
+          <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
+              <h4 className="text-sm font-bold text-gray-900 mb-2">How was your delivery?</h4>
+              <div className="flex items-center gap-2 mb-3">
+                  {[1, 2, 3, 4, 5].map(star => (
+                      <button
+                          key={star}
+                          disabled={ratingLoading}
+                          onMouseEnter={() => setHoveredRating(star)}
+                          onMouseLeave={() => setHoveredRating(0)}
+                          onClick={() => setRating(star)}
+                          className="focus:outline-none transition-transform hover:scale-110"
+                      >
+                          <Star className={`w-6 h-6 ${(hoveredRating || rating) >= star ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`} />
+                      </button>
+                  ))}
+              </div>
+              {rating > 0 && (
+                  <div className="space-y-3 animate-fade-in">
+                      <textarea
+                          placeholder="Any feedback? (Optional)"
+                          value={feedback}
+                          onChange={e => setFeedback(e.target.value)}
+                          className="w-full text-sm bg-white border border-gray-200 rounded-lg p-2 focus:outline-none focus:ring-1 focus:ring-brand-500 resize-none h-16"
+                      ></textarea>
+                      <button
+                          disabled={ratingLoading}
+                          onClick={() => onSubmitRating(rating, feedback)}
+                          className="w-full bg-brand-700 text-white rounded-lg py-2 text-sm font-bold shadow hover:bg-brand-800 transition-colors disabled:bg-gray-300"
+                      >
+                          {ratingLoading ? 'Submitting...' : 'Submit Rating'}
+                      </button>
+                  </div>
+              )}
           </div>
       );
   };

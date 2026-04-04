@@ -44,7 +44,7 @@ const Login = () => {
           </div>
         </div>
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 tracking-tight">
-          Welcome back to Ram Bazar
+          Welcome back to Padmavati super bazar
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
           Sign in to your account
@@ -89,7 +89,7 @@ const Login = () => {
                 <div className="w-full border-t border-gray-200" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">New to Ram Bazar?</span>
+                <span className="px-2 bg-white text-gray-500">New to Padmavati super bazar?</span>
               </div>
             </div>
 

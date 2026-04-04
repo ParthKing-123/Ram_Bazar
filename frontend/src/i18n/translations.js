@@ -1,4 +1,4 @@
-// All UI translations for Ram Bazar
+// All UI translations for Padmavati super bazar
 const translations = {
   en: {
     // Navigation
@@ -44,7 +44,7 @@ const translations = {
     qualityAssured: 'Quality Assured',
     delivery: 'Delivery',
     ourStory: 'Our Story',
-    storyP1: 'Ram Bazaar is a trusted store at Pethvadgaon with over 15 years of experience in serving quality products to customers. We offer a wide range of essentials across multiple categories, including household items, travel accessories, loose groceries, personal care products and everyday utensils.',
+    storyP1: 'Padmavati super bazar is a trusted store at Pethvadgaon with over 15 years of experience in serving quality products to customers. We offer a wide range of essentials across multiple categories, including household items, travel accessories, loose groceries, personal care products and everyday utensils.',
     storyP2: 'Known for our reliability and customer satisfaction, we have built strong relationships within the community. Our commitment has always been to provide quality products at fair prices.',
     storyP3: 'Now, we are bringing the same trusted shopping experience online, making it easier and more convenient for you to shop anytime, anywhere.',
     whatWeOffer: 'What We Offer',
@@ -53,7 +53,7 @@ const translations = {
     storeHours: 'Store Hours',
     monToSat: 'Monday – Saturday',
     sunday: 'Sunday',
-    onlineAvailable: '🌐 Online orders available 24/7',
+    onlineAvailable: '🌐 Online orders available within working hours',
     forMoreInfo: 'For More Information',
     call: 'Call',
     pethvadgaon: "Pethvadgaon, Maharashtra, India",
@@ -133,7 +133,7 @@ const translations = {
     storeHours: 'दुकान का समय',
     monToSat: 'सोमवार – शनिवार',
     sunday: 'रविवार',
-    onlineAvailable: '🌐 ऑनलाइन ऑर्डर 24/7 उपलब्ध',
+    onlineAvailable: '🌐 ऑनलाइन ऑर्डर कार्य समय के दौरान उपलब्ध',
     forMoreInfo: 'अधिक जानकारी के लिए',
     call: 'कॉल',
     pethvadgaon: 'पेठवडगाव, महाराष्ट्र, भारत',
@@ -213,7 +213,7 @@ const translations = {
     storeHours: 'दुकानाचे वेळ',
     monToSat: 'सोमवार – शनिवार',
     sunday: 'रविवार',
-    onlineAvailable: '🌐 ऑनलाइन ऑर्डर 24/7 उपलब्ध',
+    onlineAvailable: '🌐 ऑनलाइन ऑर्डर कामाच्या वेळेत उपलब्ध',
     forMoreInfo: 'अधिक माहितीसाठी',
     call: 'कॉल',
     pethvadgaon: 'पेठवडगाव, महाराष्ट्र, भारत',

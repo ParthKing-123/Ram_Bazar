@@ -64,7 +64,18 @@ export const updateOrder = async (req, res) => {
           for (const item of order.items) {
               const product = await Product.findById(item.product);
               if (product) {
-                  product.stock = product.stock - item.quantity;
+                  let updated = false;
+                  if (item.unit && product.variants && product.variants.length > 0) {
+                      const variant = product.variants.find(v => v.unit === item.unit);
+                      if (variant) {
+                          variant.stock = variant.stock - item.quantity;
+                          updated = true;
+                      }
+                  }
+                  
+                  if (!updated) {
+                      product.stock = product.stock - item.quantity;
+                  }
                   await product.save();
               }
           }
@@ -78,5 +89,31 @@ export const updateOrder = async (req, res) => {
     }
   } catch (error) {
      res.status(400).json({ message: error.message });
+  }
+};
+
+// @desc    Rate and feedback for a delivered order
+// @route   PUT /api/orders/:id/rate
+// @access  Public
+export const rateOrder = async (req, res) => {
+  try {
+    const { deliveryRating, deliveryFeedback } = req.body;
+    const order = await Order.findById(req.params.id);
+
+    if (order) {
+      if (order.status !== 'Delivered') {
+        return res.status(400).json({ message: 'Order must be delivered to be rated' });
+      }
+
+      order.deliveryRating = deliveryRating;
+      order.deliveryFeedback = deliveryFeedback;
+
+      const updatedOrder = await order.save();
+      res.json(updatedOrder);
+    } else {
+      res.status(404).json({ message: 'Order not found' });
+    }
+  } catch (error) {
+    res.status(400).json({ message: error.message });
   }
 };

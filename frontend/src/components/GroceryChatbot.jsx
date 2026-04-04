@@ -3,7 +3,7 @@ import { MessageCircle, X, Send, Sparkles, Loader2, ChevronDown } from 'lucide-r
 
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || '';
 const GEMINI_MODEL = 'gemini-2.5-flash';
-const SYSTEM_PROMPT = `You are a friendly and knowledgeable grocery shopping assistant for Ram Bazar — a trusted grocery store in Pethvadgaon, Maharashtra. 
+const SYSTEM_PROMPT = `You are a friendly and knowledgeable grocery shopping assistant for Padmavati super bazar — a trusted grocery store in Pethvadgaon, Maharashtra. 
 
 Your role is to:
 - Help customers with grocery shopping advice and suggestions
@@ -35,7 +35,7 @@ async function callGemini(history) {
     },
     {
       role: 'model',
-      parts: [{ text: 'Understood! I\'m ready to help Ram Bazar customers with grocery advice. How can I help you today?' }],
+      parts: [{ text: 'Understood! I\'m ready to help Padmavati super bazar customers with grocery advice. How can I help you today?' }],
     },
     ...history.map(m => ({
       role: m.role === 'user' ? 'user' : 'model',
@@ -63,7 +63,7 @@ const GroceryChatbot = () => {
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
-      text: "Hi! 👋 I'm your Ram Bazar grocery assistant. Ask me anything — weekly lists, meal planning, budget tips, and more!",
+      text: "Hi! 👋 I'm your Padmavati super bazar grocery assistant. Ask me anything — weekly lists, meal planning, budget tips, and more!",
     },
   ]);
   const [input, setInput] = useState('');

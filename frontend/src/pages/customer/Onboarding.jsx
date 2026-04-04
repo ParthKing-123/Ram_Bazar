@@ -73,7 +73,7 @@ const ComingSoonScreen = ({ distanceKm, onBack }) => (
       </button>
     </div>
 
-    <p className="text-white/40 text-xs mt-8">Ram Bazar · Pethvadgaon, Maharashtra</p>
+    <p className="text-white/40 text-xs mt-8">Padmavati super bazar · Pethvadgaon, Maharashtra</p>
   </div>
 );
 
@@ -98,28 +98,60 @@ const Onboarding = () => {
   const checkLocationAndProceed = async (cust) => {
     setLocationStep(true);
 
+    const finishSuccess = () => {
+       setCustomer(cust);
+       navigate('/');
+    };
+
+    const tryGPSFallback = () => {
+        if (navigator.geolocation) {
+           navigator.geolocation.getCurrentPosition(
+              (position) => {
+                 const dist = haversineDistance(position.coords.latitude, position.coords.longitude, STORE_LAT, STORE_LNG);
+                 setUserDistance(dist);
+                 if (dist > MAX_DELIVERY_KM) {
+                     setTooFar(true);
+                     setLocationStep(false);
+                 } else {
+                     finishSuccess();
+                 }
+              },
+              (error) => {
+                 setError('We could not verify your address on the map, and GPS location was denied. Please provide a more recognizable town/city name.');
+                 setLocationStep(false);
+              },
+              { timeout: 10000, enableHighAccuracy: true }
+           );
+        } else {
+           setError('We could not verify your exact location. Please write a more widely recognized town/landmark in your address.');
+           setLocationStep(false);
+        }
+    };
+
     try {
-      // Use the raw address with Maharashtra, India to allow addresses outside Pethvadgaon
       let query = encodeURIComponent(`${formData.address}, Maharashtra, India`);
       let response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`, {
-        headers: {
-          'Accept-Language': 'en-US,en;q=0.9',
-          'User-Agent': 'RamBazarLocalApp/1.0'
-        }
+        headers: { 'Accept-Language': 'en-US,en;q=0.9', 'User-Agent': 'RamBazarLocalApp/1.0' }
       });
-      
       let data = await response.json();
 
-      // If full address isn't found, Nominatim returns empty. Fallback to just the city/last part:
       const parts = formData.address.split(/[\n,]/).map(s => s.trim()).filter(Boolean);
       if ((!data || data.length === 0) && parts.length > 0) {
-        const lastPart = parts[parts.length - 1];
-        query = encodeURIComponent(`${lastPart}, Maharashtra, India`);
+        // Try the last two parts if available, otherwise just last part
+        const searchParts = parts.slice(Math.max(parts.length - 2, 0)).join(', ');
+        query = encodeURIComponent(`${searchParts}, Maharashtra, India`);
         response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`, {
-          headers: {
-            'Accept-Language': 'en-US,en;q=0.9',
-            'User-Agent': 'RamBazarLocalApp/1.0'
-          }
+          headers: { 'Accept-Language': 'en-US,en;q=0.9', 'User-Agent': 'RamBazarLocalApp/1.0' }
+        });
+        data = await response.json();
+      }
+
+      if ((!data || data.length === 0) && parts.length > 0) {
+        // Ultimate fallback: Just the very last word/city
+        const lastPart = parts[parts.length - 1];
+        query = encodeURIComponent(`${lastPart}, Maharashtra`);
+        response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`, {
+          headers: { 'Accept-Language': 'en-US,en;q=0.9', 'User-Agent': 'RamBazarLocalApp/1.0' }
         });
         data = await response.json();
       }
@@ -127,21 +159,7 @@ const Onboarding = () => {
       if (data && data.length > 0) {
         const lat = parseFloat(data[0].lat);
         const lon = parseFloat(data[0].lon);
-        
-        let dist = haversineDistance(lat, lon, STORE_LAT, STORE_LNG);
-
-        // Try getting real driving distance via OSRM (OpenStreetMap Routing)
-        try {
-          const routeRes = await fetch(`https://router.project-osrm.org/route/v1/driving/${STORE_LNG},${STORE_LAT};${lon},${lat}?overview=false`);
-          const routeData = await routeRes.json();
-          if (routeData.code === 'Ok' && routeData.routes && routeData.routes.length > 0) {
-            // Distance is in meters, converting to km
-            dist = routeData.routes[0].distance / 1000;
-          }
-        } catch (routeErr) {
-          console.warn('OSRM routing failed, falling back to Haversine distance', routeErr);
-        }
-
+        const dist = haversineDistance(lat, lon, STORE_LAT, STORE_LNG);
         setUserDistance(dist);
         
         if (dist > MAX_DELIVERY_KM) {
@@ -149,14 +167,14 @@ const Onboarding = () => {
           setLocationStep(false);
           return;
         }
+        finishSuccess();
+      } else {
+        tryGPSFallback();
       }
     } catch (err) {
-      console.warn('Geocoding failed, allowing through as fallback:', err);
-      // Fallback: benefit of the doubt, allow through
+      console.warn('Geocoding service error, falling back to GPS:', err);
+      tryGPSFallback();
     }
-
-    setCustomer(cust);
-    navigate('/');
   };
 
   const handleSubmit = async (e) => {
@@ -213,7 +231,7 @@ const Onboarding = () => {
           </div>
         </div>
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 tracking-tight">
-          Welcome to Ram Bazar
+          Welcome to Padmavati super bazar
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
           Please enter your details to start ordering

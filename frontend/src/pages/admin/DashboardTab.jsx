@@ -38,6 +38,7 @@ const DashboardTab = () => {
   const [newProduct, setNewProduct] = useState(EMPTY_PRODUCT);
   const [productImgType, setProductImgType] = useState('url');
   const [productImgFile, setProductImgFile] = useState(null);
+  const [editingProductIndex, setEditingProductIndex] = useState(-1);
 
   const fetchData = async () => {
     try {
@@ -72,6 +73,7 @@ const DashboardTab = () => {
     setNewProduct(EMPTY_PRODUCT);
     setProductImgType('url');
     setProductImgFile(null);
+    setEditingProductIndex(-1);
     setIsModalOpen(true);
   };
 
@@ -100,10 +102,29 @@ const DashboardTab = () => {
       catch { alert('Image upload failed.'); return; }
     }
     const product = { ...newProduct, image: imgUrl, price: Number(newProduct.price), stock: Number(newProduct.quantity) || 100 };
-    setFormData(prev => ({ ...prev, products: [...prev.products, product] }));
+    
+    if (editingProductIndex !== -1) {
+       setFormData(prev => {
+          const newProds = [...prev.products];
+          newProds[editingProductIndex] = product;
+          return { ...prev, products: newProds };
+       });
+       setEditingProductIndex(-1);
+    } else {
+       setFormData(prev => ({ ...prev, products: [...prev.products, product] }));
+    }
+
     setNewProduct(EMPTY_PRODUCT);
     setProductImgType('url');
     setProductImgFile(null);
+  };
+
+  const handleEditProduct = (index) => {
+    const p = formData.products[index];
+    setNewProduct({ ...p, quantity: p.stock });
+    setProductImgType('url');
+    setProductImgFile(null);
+    setEditingProductIndex(index);
   };
 
   const handleRemoveProduct = (index) => {
@@ -242,7 +263,7 @@ const DashboardTab = () => {
                       ))}
                     </div>
                     {bgInputType === 'url' ? (
-                      <input type="url" value={formData.image} onChange={e => setFormData({...formData, image: e.target.value})} placeholder="https://example.com/festive-bg.jpg" className="w-full bg-white text-gray-900 border border-gray-300 rounded-xl py-2 px-3 focus:outline-none focus:ring-2 focus:ring-brand-500 placeholder:text-gray-400" />
+                      <input type="text" value={formData.image} onChange={e => setFormData({...formData, image: e.target.value})} placeholder="https://example.com/festive-bg.jpg or /uploads/..." className="w-full bg-white text-gray-900 border border-gray-300 rounded-xl py-2 px-3 focus:outline-none focus:ring-2 focus:ring-brand-500 placeholder:text-gray-400" />
                     ) : (
                       <div className="flex justify-center px-6 pt-5 pb-5 border-2 border-gray-300 border-dashed rounded-xl bg-gray-50">
                         <div className="text-center">
@@ -272,7 +293,10 @@ const DashboardTab = () => {
                               <div className="font-semibold text-sm text-gray-900 truncate">{p.name}</div>
                               <div className="text-xs text-gray-500">₹{p.price} / {p.unit}</div>
                             </div>
-                            <button type="button" onClick={() => handleRemoveProduct(i)} className="text-red-400 hover:text-red-600 p-1 rounded transition-colors shrink-0"><X className="w-4 h-4" /></button>
+                            <div className="flex gap-1 shrink-0">
+                               <button type="button" onClick={() => handleEditProduct(i)} className="text-brand-600 hover:text-brand-800 p-1 rounded transition-colors"><Edit2 className="w-4 h-4" /></button>
+                               <button type="button" onClick={() => handleRemoveProduct(i)} className="text-red-400 hover:text-red-600 p-1 rounded transition-colors"><X className="w-4 h-4" /></button>
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -280,7 +304,7 @@ const DashboardTab = () => {
 
                     {/* Add new product form */}
                     <div className="bg-brand-50 border border-brand-100 rounded-2xl p-4 space-y-3">
-                      <p className="text-xs font-bold text-brand-700 uppercase tracking-wider">Add a Product for this Event</p>
+                      <p className="text-xs font-bold text-brand-700 uppercase tracking-wider">{editingProductIndex !== -1 ? 'Edit Selected Product' : 'Add a Product for this Event'}</p>
                       <div className="grid grid-cols-2 gap-3">
                         <div>
                           <label className="block text-xs font-medium text-gray-600 mb-1">Product Name *</label>
@@ -313,7 +337,7 @@ const DashboardTab = () => {
                             </label>
                           </div>
                           {productImgType === 'url' ? (
-                            <input type="url" value={newProduct.image} onChange={e => setNewProduct({...newProduct, image: e.target.value})} placeholder="Image URL (optional)" className="mt-1 w-full bg-white text-gray-900 border border-gray-300 rounded-xl py-1.5 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-brand-400 placeholder:text-gray-400" />
+                            <input type="text" value={newProduct.image} onChange={e => setNewProduct({...newProduct, image: e.target.value})} placeholder="Image URL (optional)" className="mt-1 w-full bg-white text-gray-900 border border-gray-300 rounded-xl py-1.5 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-brand-400 placeholder:text-gray-400" />
                           ) : (
                             <label className="mt-1 flex items-center gap-2 cursor-pointer bg-white border border-gray-300 rounded-xl py-1.5 px-3 text-xs text-brand-600 hover:text-brand-700 transition-colors">
                               <Upload className="w-3 h-3" />
@@ -324,7 +348,7 @@ const DashboardTab = () => {
                         </div>
                       </div>
                       <button type="button" onClick={handleAddProduct} className="w-full flex items-center justify-center gap-2 py-2 bg-brand-600 text-white rounded-xl text-sm font-semibold hover:bg-brand-700 transition-colors">
-                        <PackagePlus className="w-4 h-4" /> Add to Event List
+                        {editingProductIndex !== -1 ? <><Edit2 className="w-4 h-4" /> Save Edited Product</> : <><PackagePlus className="w-4 h-4" /> Add to Event List</>}
                       </button>
                     </div>
                   </div>
