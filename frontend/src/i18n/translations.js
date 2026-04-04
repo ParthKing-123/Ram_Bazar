@@ -38,13 +38,13 @@ const translations = {
 
     // About Page
     backToStore: '← Back to Store',
-    trustedSince: 'Trusted since 2009',
+    trustedSince: 'Trusted since 2004',
     yearsOfTrust: 'Years of Trust',
     happyCustomers: 'Happy Customers',
     qualityAssured: 'Quality Assured',
     delivery: 'Delivery',
     ourStory: 'Our Story',
-    storyP1: 'Padmavati super bazar is a trusted store at Pethvadgaon with over 15 years of experience in serving quality products to customers. We offer a wide range of essentials across multiple categories, including household items, travel accessories, loose groceries, personal care products and everyday utensils.',
+    storyP1: 'Padmavati super bazar is a trusted store at Pethvadgaon with over 20 years of experience in serving quality products to customers. We offer a wide range of essentials across multiple categories, including household items, travel accessories, loose groceries, personal care products and everyday utensils.',
     storyP2: 'Known for our reliability and customer satisfaction, we have built strong relationships within the community. Our commitment has always been to provide quality products at fair prices.',
     storyP3: 'Now, we are bringing the same trusted shopping experience online, making it easier and more convenient for you to shop anytime, anywhere.',
     whatWeOffer: 'What We Offer',
@@ -118,13 +118,13 @@ const translations = {
 
     // About Page
     backToStore: '← वापस दुकान पर',
-    trustedSince: '2009 से विश्वसनीय',
+    trustedSince: '2004 से विश्वसनीय',
     yearsOfTrust: 'वर्षों का अनुभव',
     happyCustomers: 'खुश ग्राहक',
     qualityAssured: 'गुणवत्ता की गारंटी',
     delivery: 'डिलीवरी',
     ourStory: 'हमारी कहानी',
-    storyP1: 'राम बाजार पेठवडगाव में एक विश्वसनीय दुकान है जिसे 15 से अधिक वर्षों का अनुभव है। हम घरेलू सामान, यात्रा सामग्री, किराना, व्यक्तिगत देखभाल उत्पाद और दैनिक उपयोगी वस्तुओं सहित विभिन्न श्रेणियों में आवश्यक वस्तुओं की एक विस्तृत श्रृंखला प्रदान करते हैं।',
+    storyP1: 'राम बाजार पेठवडगाव में एक विश्वसनीय दुकान है जिसे 20 से अधिक वर्षों का अनुभव है। हम घरेलू सामान, यात्रा सामग्री, किराना, व्यक्तिगत देखभाल उत्पाद और दैनिक उपयोगी वस्तुओं सहित विभिन्न श्रेणियों में आवश्यक वस्तुओं की एक विस्तृत श्रृंखला प्रदान करते हैं।',
     storyP2: 'हम अपनी विश्वसनीयता और ग्राहक संतुष्टि के लिए जाने जाते हैं और समुदाय में मजबूत संबंध बनाए हैं। हमारी हमेशा से यही प्रतिबद्धता रही है कि उचित मूल्य पर गुणवत्तापूर्ण उत्पाद प्रदान किए जाएं।',
     storyP3: 'अब हम वही विश्वसनीय खरीदारी अनुभव ऑनलाइन ला रहे हैं, ताकि आप कभी भी, कहीं से भी आसानी से खरीदारी कर सकें।',
     whatWeOffer: 'हम क्या देते हैं',
@@ -198,13 +198,13 @@ const translations = {
 
     // About Page
     backToStore: '← दुकानाकडे परत',
-    trustedSince: '2009 पासून विश्वसनीय',
+    trustedSince: '2004 पासून विश्वसनीय',
     yearsOfTrust: 'वर्षांचा अनुभव',
     happyCustomers: 'आनंदी ग्राहक',
     qualityAssured: 'गुणवत्ता हमी',
     delivery: 'डिलिव्हरी',
     ourStory: 'आमची कथा',
-    storyP1: 'राम बाजार पेठवडगाव येथे एक विश्वासू दुकान आहे ज्याला 15 पेक्षा जास्त वर्षांचा अनुभव आहे. आम्ही घरगुती वस्तू, प्रवास साहित्य, किराणा, वैयक्तिक काळजी उत्पादने आणि दैनंदिन भांडी यांसह विविध श्रेणींमध्ये आवश्यक वस्तूंची विस्तृत श्रेणी देतो.',
+    storyP1: 'राम बाजार पेठवडगाव येथे एक विश्वासू दुकान आहे ज्याला 20 पेक्षा जास्त वर्षांचा अनुभव आहे. आम्ही घरगुती वस्तू, प्रवास साहित्य, किराणा, वैयक्तिक काळजी उत्पादने आणि दैनंदिन भांडी यांसह विविध श्रेणींमध्ये आवश्यक वस्तूंची विस्तृत श्रेणी देतो.',
     storyP2: 'आम्ही आमच्या विश्वासार्हतेसाठी आणि ग्राहक समाधानासाठी ओळखले जातो आणि समाजात मजबूत संबंध निर्माण केले आहेत. उचित किमतीत गुणवत्तापूर्ण उत्पादने देणे हीच आमची वचनबद्धता आहे.',
     storyP3: 'आता आम्ही तेच विश्वसनीय खरेदीचा अनुभव ऑनलाइन आणत आहोत, जेणेकरून तुम्ही केव्हाही, कुठूनही सहजपणे खरेदी करू शकता.',
     whatWeOffer: 'आम्ही काय देतो',
