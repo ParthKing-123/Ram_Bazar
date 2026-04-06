@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import useCustomerStore from '../../store/useCustomerStore';
 import api from '../../services/api';
-import { MapPin, AlertTriangle, Loader2 } from 'lucide-react';
+import { MapPin, AlertTriangle, Loader2, LocateFixed } from 'lucide-react';
 
 // Padmavati Super Bazar, Pethvadgaon coordinates
 const STORE_LAT = 16.8352;
@@ -41,16 +41,9 @@ const ComingSoonScreen = ({ distanceKm, onBack }) => (
       We're Coming to<br />Your Area Soon!
     </h1>
 
-    <p className="text-white/75 text-base leading-relaxed mb-2 max-w-xs">
+    <p className="text-white/75 text-base leading-relaxed mb-6 max-w-xs">
       Our delivery is currently limited to within <span className="text-white font-bold">{MAX_DELIVERY_KM} km</span> of Padmavati Super Bazar, Pethvadgaon.
     </p>
-
-    {distanceKm && (
-      <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl px-5 py-3 mb-6">
-        <p className="text-white/60 text-xs uppercase tracking-widest mb-1">Your distance from store</p>
-        <p className="text-white font-black text-2xl">{distanceKm.toFixed(1)} km</p>
-      </div>
-    )}
 
     <p className="text-white/60 text-sm mb-8 max-w-xs">
       We're working hard to expand our delivery network. Stay tuned — we'll be available in your location very soon! 🚀
@@ -87,7 +80,42 @@ const Onboarding = () => {
   const [locationStep, setLocationStep] = useState(false); // true = checking location
   const [savedCustomer, setSavedCustomer] = useState(null);
   const [tooFar, setTooFar] = useState(false);
-  const [userDistance, setUserDistance] = useState(null);
+  const [locating, setLocating] = useState(false);
+  const [detectedCoords, setDetectedCoords] = useState(null);
+
+  const handleAutoLocate = () => {
+    if (!navigator.geolocation) {
+      setError('Geolocation is not supported by your browser');
+      return;
+    }
+    setLocating(true);
+    setError('');
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          setDetectedCoords({ lat: latitude, lng: longitude });
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+          const data = await res.json();
+          if (data && data.display_name) {
+            setFormData((prev) => ({ ...prev, address: data.display_name }));
+            setError('');
+          } else {
+            setError('Could not get address from location');
+          }
+        } catch (err) {
+          setError('Failed to fetch address details');
+        } finally {
+          setLocating(false);
+        }
+      },
+      (error) => {
+        setError('Location permission denied or unavailable');
+        setLocating(false);
+      },
+      { enableHighAccuracy: true }
+    );
+  };
 
   useEffect(() => {
     if (customer) navigate('/');
@@ -103,88 +131,81 @@ const Onboarding = () => {
        navigate('/');
     };
 
-    const tryGPSFallback = () => {
-        if (navigator.geolocation) {
-           navigator.geolocation.getCurrentPosition(
-              (position) => {
-                 const dist = haversineDistance(position.coords.latitude, position.coords.longitude, STORE_LAT, STORE_LNG);
-                 setUserDistance(dist);
-                 if (dist > MAX_DELIVERY_KM) {
-                     setTooFar(true);
-                     setLocationStep(false);
-                 } else {
-                     finishSuccess();
-                 }
-              },
-              (error) => {
-                 setError('We could not verify your address on the map, and GPS location was denied. Please provide a more recognizable town/city name.');
-                 setLocationStep(false);
-              },
-              { timeout: 10000, enableHighAccuracy: true }
-           );
-        } else {
-           setError('We could not verify your exact location. Please write a more widely recognized town/landmark in your address.');
-           setLocationStep(false);
-        }
+    const failLocation = () => {
+       setTooFar(true);
+       setLocationStep(false);
     };
 
+    // 1. Exact GPS usage (If user used auto-detect, we already exactly know they are within/outside)
+    if (detectedCoords) {
+      const dist = haversineDistance(detectedCoords.lat, detectedCoords.lng, STORE_LAT, STORE_LNG);
+      if (dist <= MAX_DELIVERY_KM) finishSuccess();
+      else failLocation();
+      return;
+    }
+
+    // 2. Keyword check fallback (Fast and local)
+    const lowerAddress = formData.address.toLowerCase();
+    const VALID_LOCAL_AREAS = [
+      'peth vadgaon', 'pethvadgaon', 'vadgaon', 'wathar', 'kini', 'ambap', 
+      'minche', 'talsande', 'latawade', 'bhendavade', 'bhadole', 'hatkanangale',
+      'savarde', 'nagaon', 'toap', 'shiye', 'atharv'
+    ];
+    if (VALID_LOCAL_AREAS.some(area => lowerAddress.includes(area))) {
+      finishSuccess();
+      return;
+    }
+
+    // 3. Clean Geocoding search (Removing conflicting elements causing massive distance bugs)
     try {
-      let query = encodeURIComponent(`${formData.address}, Maharashtra, India`);
+      const cleanAddr = formData.address.replace(/maharashtra/ig, '').replace(/india/ig, '').replace(/,,/g, ',').trim();
+      let query = encodeURIComponent(`${cleanAddr}, Maharashtra, India`);
       let response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`, {
         headers: { 'Accept-Language': 'en-US,en;q=0.9', 'User-Agent': 'RamBazarLocalApp/1.0' }
       });
       let data = await response.json();
 
-      const parts = formData.address.split(/[\n,]/).map(s => s.trim()).filter(Boolean);
-      if ((!data || data.length === 0) && parts.length > 0) {
-        // Try the last two parts if available, otherwise just last part
-        const searchParts = parts.slice(Math.max(parts.length - 2, 0)).join(', ');
-        query = encodeURIComponent(`${searchParts}, Maharashtra, India`);
-        response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`, {
-          headers: { 'Accept-Language': 'en-US,en;q=0.9', 'User-Agent': 'RamBazarLocalApp/1.0' }
-        });
-        data = await response.json();
-      }
-
-      if ((!data || data.length === 0) && parts.length > 0) {
-        // Ultimate fallback: Just the very last word/city
-        const lastPart = parts[parts.length - 1];
-        query = encodeURIComponent(`${lastPart}, Maharashtra`);
-        response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`, {
-          headers: { 'Accept-Language': 'en-US,en;q=0.9', 'User-Agent': 'RamBazarLocalApp/1.0' }
-        });
-        data = await response.json();
-      }
-
       if (data && data.length > 0) {
-        const lat = parseFloat(data[0].lat);
-        const lon = parseFloat(data[0].lon);
-        const dist = haversineDistance(lat, lon, STORE_LAT, STORE_LNG);
-        setUserDistance(dist);
-        
-        if (dist > MAX_DELIVERY_KM) {
-          setTooFar(true);
-          setLocationStep(false);
-          return;
-        }
-        finishSuccess();
+        const dist = haversineDistance(parseFloat(data[0].lat), parseFloat(data[0].lon), STORE_LAT, STORE_LNG);
+        if (dist > MAX_DELIVERY_KM) failLocation();
+        else finishSuccess();
       } else {
-        tryGPSFallback();
+        failLocation(); // Explicit failure, no unverified bypass.
       }
     } catch (err) {
-      console.warn('Geocoding service error, falling back to GPS:', err);
-      tryGPSFallback();
+      console.warn('Geocoding service error:', err);
+      failLocation();
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+    setError('');
+
+    // ── Validation ──────────────────────────────────────────
+    const phoneRegex = /^\d{10}$/;
+    if (!phoneRegex.test(formData.phone)) {
+      setError('Phone number must be exactly 10 digits (numbers only).');
       return;
     }
+
+    if (!formData.email.toLowerCase().endsWith('@gmail.com')) {
+      setError('Email must be a valid Gmail address ending with @gmail.com');
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters long.');
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+    // ────────────────────────────────────────────────────────
+
     setLoading(true);
-    setError('');
     try {
       const response = await api.post('/customers', formData);
       const cust = response.data;
@@ -203,7 +224,6 @@ const Onboarding = () => {
   if (tooFar) {
     return (
       <ComingSoonScreen
-        distanceKm={userDistance}
         onBack={() => { setTooFar(false); setLocationStep(false); }}
       />
     );
@@ -266,7 +286,7 @@ const Onboarding = () => {
             <div>
               <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Phone Number</label>
               <div className="mt-1">
-                <input id="phone" name="phone" type="tel" required placeholder="9876543210" value={formData.phone} onChange={handleChange}
+                <input id="phone" name="phone" type="tel" required placeholder="9876543210 (10 digits)" maxLength={10} value={formData.phone} onChange={handleChange}
                   className="appearance-none block w-full px-3 py-2.5 border border-gray-200 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-brand-500 focus:border-brand-500 sm:text-sm transition-colors bg-gray-50 focus:bg-white" />
               </div>
             </div>
@@ -274,14 +294,27 @@ const Onboarding = () => {
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email address</label>
               <div className="mt-1">
-                <input id="email" name="email" type="email" required placeholder="ram@example.com" value={formData.email} onChange={handleChange}
+                <input id="email" name="email" type="email" required placeholder="yourname@gmail.com" value={formData.email} onChange={handleChange}
                   className="appearance-none block w-full px-3 py-2.5 border border-gray-200 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-brand-500 focus:border-brand-500 sm:text-sm transition-colors bg-gray-50 focus:bg-white" />
               </div>
+              <p className="mt-1 text-xs text-gray-400">Must be a @gmail.com address</p>
             </div>
 
             <div>
-              <label htmlFor="address" className="block text-sm font-medium text-gray-700">Delivery Address</label>
-              <div className="mt-1">
+              <div className="flex justify-between items-center mb-1">
+                <label htmlFor="address" className="block text-sm font-medium text-gray-700">Delivery Address</label>
+                <button
+                  type="button"
+                  onClick={handleAutoLocate}
+                  disabled={locating}
+                  className="text-xs text-brand-600 hover:text-brand-700 font-medium flex items-center gap-1 bg-brand-50 px-2 py-1 rounded-md transition-colors"
+                  title="Auto detect location"
+                >
+                  {locating ? <Loader2 className="w-3.5 h-3.5 animate-spin"/> : <LocateFixed className="w-3.5 h-3.5"/>}
+                  {locating ? 'Locating...' : 'Auto-detect'}
+                </button>
+              </div>
+              <div className="mt-1 relative">
                 <textarea id="address" name="address" rows="3" required placeholder="House number, Street name, Landmark" value={formData.address} onChange={handleChange}
                   className="appearance-none block w-full px-3 py-2 border border-gray-200 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-brand-500 focus:border-brand-500 sm:text-sm transition-colors bg-gray-50 focus:bg-white resize-none" />
               </div>

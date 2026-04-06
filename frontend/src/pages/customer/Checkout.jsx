@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, Trash2, Plus, Minus, MapPin, Phone, User, Tag, X, Truck, Gift } from 'lucide-react';
+import { ChevronLeft, Trash2, Plus, Minus, MapPin, Phone, User, Tag, X, Truck, Gift, LocateFixed, Loader2 } from 'lucide-react';
 import useCartStore from '../../store/useCartStore';
 import useCustomerStore from '../../store/useCustomerStore';
 import api from '../../services/api';
@@ -55,13 +55,48 @@ const Checkout = () => {
   const [error, setError] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState(customer || { name: '', phone: '', address: '' });
-  const [paymentMethod, setPaymentMethod] = useState('COD');
-
+  const [paymentMethod, setPaymentMethod] = useState('Offline');
+  
   // Coupon state
   const [couponInput, setCouponInput] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState(null); // { code, ...couponDef }
   const [couponError, setCouponError] = useState('');
   const [couponSuccess, setCouponSuccess] = useState('');
+  const [locating, setLocating] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+  const handleAutoLocate = () => {
+    if (!navigator.geolocation) {
+      setError('Geolocation is not supported by your browser');
+      return;
+    }
+    setLocating(true);
+    setError('');
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+          const data = await res.json();
+          if (data && data.display_name) {
+            setEditForm((prev) => ({ ...prev, address: data.display_name }));
+            setError('');
+          } else {
+            setError('Could not get address from location');
+          }
+        } catch (err) {
+          setError('Failed to fetch address details');
+        } finally {
+          setLocating(false);
+        }
+      },
+      (error) => {
+        setError('Location permission denied or unavailable');
+        setLocating(false);
+      },
+      { enableHighAccuracy: true }
+    );
+  };
 
   useEffect(() => {
     if (!customer) navigate('/onboarding');
@@ -105,12 +140,16 @@ const Checkout = () => {
     setIsEditing(false);
   };
 
-  const placeOrder = async () => {
+  const placeOrder = () => {
+    setShowConfirmModal(true);
+  };
+
+  const executeOrderPlacement = async () => {
     setLoading(true);
+    setShowConfirmModal(false);
     setError('');
     try {
       const orderData = {
-        customerId: customer._id,
         items: cart,
         total: finalTotal,
         paymentMethod,
@@ -121,13 +160,18 @@ const Checkout = () => {
       const response = await api.post('/orders', orderData);
       clearCart();
 
-      if (paymentMethod === 'COD') {
-        const adminPhone = '919028535600';
-        const itemList = cart.map(item => `${item.quantity}x ${item.name} (${item.unit || '1 Piece'})`).join(', ');
-        const couponLine = appliedCoupon ? `\nCoupon: ${appliedCoupon.code} (−₹${discount})` : '';
-        const message = `Hi Padmavati super bazar, I have placed an order!\n\nName: ${customer.name}\nPhone: ${customer.phone}\nAddress: ${customer.address}\n\nItems: ${itemList}${couponLine}\n\nTotal: ₹${finalTotal}\nPayment Method: Cash on Delivery\n\nPlease confirm my order.`;
-        window.open(`https://wa.me/${adminPhone}?text=${encodeURIComponent(message)}`, '_blank');
+      const adminPhone = '919028535600';
+      const itemList = cart.map(item => `${item.quantity}x ${item.name} (${item.unit || '1 Piece'})`).join(', ');
+      const couponLine = appliedCoupon ? `\nCoupon: ${appliedCoupon.code} (−₹${discount})` : '';
+      
+      let message = '';
+      if (paymentMethod === 'Offline') {
+        message = `Hi Padmavati super bazar, I have placed an order!\n\nName: ${customer.name}\nPhone: ${customer.phone}\nAddress: ${customer.address}\n\nItems: ${itemList}${couponLine}\n\nTotal: ₹${finalTotal}\nPayment Preference: Cash on Delivery\n\nPlease confirm my order.`;
+      } else {
+        message = `Hi Padmavati super bazar, I have placed an order!\n\nName: ${customer.name}\nPhone: ${customer.phone}\nAddress: ${customer.address}\n\nItems: ${itemList}${couponLine}\n\nTotal: ₹${finalTotal}\nPayment Preference: Online at Delivery\n\nPlease confirm my order.`;
       }
+      
+      window.open(`https://wa.me/${adminPhone}?text=${encodeURIComponent(message)}`, '_blank');
 
       navigate('/success', { state: { orderId: response.data._id, total: finalTotal } });
     } catch (err) {
@@ -192,7 +236,19 @@ const Checkout = () => {
                 <input type="tel" required value={editForm.phone} onChange={e => setEditForm({ ...editForm, phone: e.target.value })} className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white text-gray-900 outline-none focus:ring-2 focus:ring-brand-500/20" />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">Address</label>
+                <div className="flex justify-between items-center mb-1">
+                  <label className="block text-xs text-gray-500">Address</label>
+                  <button
+                    type="button"
+                    onClick={handleAutoLocate}
+                    disabled={locating}
+                    className="text-xs text-brand-600 hover:text-brand-700 font-medium flex items-center gap-1 bg-brand-50 px-2 py-1 rounded-md transition-colors"
+                    title="Auto detect location"
+                  >
+                    {locating ? <Loader2 className="w-3 h-3 animate-spin"/> : <LocateFixed className="w-3 h-3"/>}
+                    {locating ? 'Locating...' : 'Auto-detect'}
+                  </button>
+                </div>
                 <textarea required rows="2" value={editForm.address} onChange={e => setEditForm({ ...editForm, address: e.target.value })} className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm resize-none bg-gray-50 focus:bg-white text-gray-900 outline-none focus:ring-2 focus:ring-brand-500/20" />
               </div>
               <div className="flex gap-2">
@@ -308,32 +364,25 @@ const Checkout = () => {
 
         {/* Payment Options */}
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-          <h2 className="font-bold text-gray-900 mb-4">Payment Options</h2>
+          <h2 className="font-bold text-gray-900 mb-4">Payment Preference (At Delivery)</h2>
           <div className="space-y-3">
-            <label className={`flex items-start p-4 border rounded-xl cursor-pointer transition-colors ${paymentMethod === 'UPI' ? 'border-brand-600 bg-brand-50/30' : 'border-gray-200 hover:bg-gray-50'}`}>
+            <label className={`flex items-start p-4 border rounded-xl cursor-pointer transition-colors ${paymentMethod === 'Online' ? 'border-brand-600 bg-brand-50/30' : 'border-gray-200 hover:bg-gray-50'}`}>
               <div className="flex items-center h-5">
-                <input type="radio" name="paymentMethod" value="UPI" checked={paymentMethod === 'UPI'} onChange={e => setPaymentMethod(e.target.value)} className="w-4 h-4 text-brand-600 focus:ring-brand-600 border-gray-300" />
+                <input type="radio" name="paymentMethod" value="Online" checked={paymentMethod === 'Online'} onChange={e => setPaymentMethod(e.target.value)} className="w-4 h-4 text-brand-600 focus:ring-brand-600 border-gray-300" />
               </div>
               <div className="ml-3 text-sm flex-1">
-                <span className="font-medium text-gray-900 block">Pay Now (UPI)</span>
-                <span className="text-gray-500 text-xs block mt-0.5">Instant confirmation via Google Pay, PhonePe, etc.</span>
+                <span className="font-medium text-gray-900 block">Pay Online (UPI) at Door</span>
+                <span className="text-gray-500 text-xs block mt-0.5">Scan the QR code shown by our delivery rider.</span>
               </div>
             </label>
 
-            {paymentMethod === 'UPI' && (
-              <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex flex-col items-center">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg" alt="Scan to Pay" className="w-32 h-32 rounded-lg mix-blend-multiply" />
-                <p className="text-xs text-gray-500 mt-2 font-medium">Scan to pay exactly ₹{finalTotal}</p>
-              </div>
-            )}
-
-            <label className={`flex items-start p-4 border rounded-xl cursor-pointer transition-colors ${paymentMethod === 'COD' ? 'border-brand-600 bg-brand-50/30' : 'border-gray-200 hover:bg-gray-50'}`}>
+            <label className={`flex items-start p-4 border rounded-xl cursor-pointer transition-colors ${paymentMethod === 'Offline' ? 'border-brand-600 bg-brand-50/30' : 'border-gray-200 hover:bg-gray-50'}`}>
               <div className="flex items-center h-5">
-                <input type="radio" name="paymentMethod" value="COD" checked={paymentMethod === 'COD'} onChange={e => setPaymentMethod(e.target.value)} className="w-4 h-4 text-brand-600 focus:ring-brand-600 border-gray-300" />
+                <input type="radio" name="paymentMethod" value="Offline" checked={paymentMethod === 'Offline'} onChange={e => setPaymentMethod(e.target.value)} className="w-4 h-4 text-brand-600 focus:ring-brand-600 border-gray-300" />
               </div>
               <div className="ml-3 text-sm flex-1">
-                <span className="font-medium text-gray-900 block">Cash on Delivery (WhatsApp)</span>
-                <span className="text-gray-500 text-xs block mt-0.5">Pay at your doorstep. Subject to confirmation on WhatsApp.</span>
+                <span className="font-medium text-gray-900 block">Cash on Delivery</span>
+                <span className="text-gray-500 text-xs block mt-0.5">Pay in cash directly to our delivery rider.</span>
               </div>
             </label>
           </div>
@@ -388,10 +437,34 @@ const Checkout = () => {
             disabled={loading}
             className="btn-primary flex-1 max-w-xs flex items-center justify-center gap-2"
           >
-            {loading ? 'Ordering...' : 'Place Order via WhatsApp'}
+            {loading ? 'Processing...' : 'Place Order via WhatsApp'}
           </button>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl w-full max-w-sm p-6 flex flex-col items-center text-center shadow-2xl relative overflow-hidden">
+            <h2 className="text-xl font-black text-gray-900 mb-2">Confirm Order</h2>
+            <p className="text-sm text-gray-600 mb-6">
+              Are you sure you want to place this order? You will pay <strong className="text-gray-900 font-bold">₹{finalTotal}</strong> on delivery.
+            </p>
+            <button
+               onClick={executeOrderPlacement}
+               className="w-full btn-primary py-3.5 flex items-center justify-center gap-2 font-bold mb-3 border-2 border-transparent shadow-lg"
+            >
+               ✅ Yes, Place Order
+            </button>
+            <button
+               onClick={() => setShowConfirmModal(false)}
+               className="text-xs font-semibold text-gray-500 hover:text-gray-800 transition-colors"
+            >
+               Cancel Let me check again
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

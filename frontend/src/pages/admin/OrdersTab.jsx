@@ -160,13 +160,11 @@ const OrdersTab = () => {
                                  Mark Out for Delivery
                              </button>
                          )}
-                         {order.status === 'Out for Delivery' && (
-                             <button onClick={() => handleStatusChange(order._id, 'Delivered')} className="px-4 py-2 bg-green-600 text-white hover:bg-green-700 font-medium text-sm rounded-xl shadow-sm transition-colors">
-                                 ✅ Confirm Payment & Deliver
-                             </button>
-                         )}
                          {(order.status === 'Delivered' || order.status === 'Rejected') && (
                              <span className="text-sm text-gray-400 font-medium italic">Order closed ({order.status})</span>
+                         )}
+                         {order.status === 'Out for Delivery' && (
+                             <span className="text-sm text-purple-600 font-medium italic">Waiting for Rider... ({order.status})</span>
                          )}
                      </div>
                      

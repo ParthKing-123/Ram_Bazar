@@ -9,6 +9,9 @@ const useCustomerStore = create((set) => ({
   },
   clearCustomer: () => {
     localStorage.removeItem('rambazar_customer');
+    localStorage.removeItem('staff_token');
+    localStorage.removeItem('admin_auth');
+    localStorage.removeItem('rider_auth');
     set({ customer: null });
   }
 }));

@@ -1,0 +1,32 @@
+Starting Address Geocoding Tests (10 Demo Locations)...
+
+[Test 1] Address: "Shivaji Chowk, Peth Vadgaon"
+   Result: ⚠️ GEOCODING_FAILED (In App, this triggers GPS fallback)
+
+[Test 2] Address: "Bhairavnath Mandir, Peth Vadgaon"
+   Result: ⚠️ GEOCODING_FAILED (In App, this triggers GPS fallback)
+
+[Test 3] Address: "Padmavati Super Bazar, Pethvadgaon"
+   Result: ⚠️ GEOCODING_FAILED (In App, this triggers GPS fallback)
+
+[Test 4] Address: "Wathar, Maharashtra"
+   Result: ✅ ACCEPTED (2.8 km)  - Located Lat: 16.8511, Lon: 74.2946
+
+[Test 5] Address: "Ashta, Maharashtra"
+   Result: ❌ TOO FAR (605.7 km)  - Located Lat: 20.7792, Lon: 78.2848
+
+[Test 6] Address: "Kolhapur City, Maharashtra"
+   Result: ❌ TOO FAR (16.7 km)  - Located Lat: 16.7028, Lon: 74.2405
+
+[Test 7] Address: "Mumbai, Maharashtra"
+   Result: ❌ TOO FAR (290.4 km)  - Located Lat: 19.0550, Lon: 72.8692
+
+[Test 8] Address: "Pune, Maharashtra"
+   Result: ❌ TOO FAR (193.7 km)  - Located Lat: 18.5214, Lon: 73.8545
+
+[Test 9] Address: "Kini, Maharashtra"
+   Result: ❌ TOO FAR (248.1 km)  - Located Lat: 18.2967, Lon: 76.0833
+
+[Test 10] Address: "Fake Unknown Place Xyzxyz"
+   Result: ⚠️ GEOCODING_FAILED (In App, this triggers GPS fallback)
+
