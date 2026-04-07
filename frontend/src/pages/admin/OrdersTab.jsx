@@ -33,20 +33,23 @@ const OrdersTab = () => {
   }, []);
 
   const handleStatusChange = async (orderId, newStatus) => {
+    // Capture order data BEFORE any async state refresh
+    const order = orders.find(o => o._id === orderId);
+
     try {
       await api.put(`/orders/${orderId}`, { status: newStatus });
-      fetchOrders(); // Refresh list to get updated stock/status if needed
       
-      // WhatsApp Automation
-      const order = orders.find(o => o._id === orderId);
+      // WhatsApp Automation — send message to customer
       if (order && order.customer && order.customer.phone) {
           const customerPhone = order.customer.phone;
           let message = '';
           
           if (newStatus === 'Confirmed') {
-              message = `*YOO !! THE ORDER IS CONFIRMEND*\n\nYour order #${order._id.substring(order._id.length - 6).toUpperCase()} has been accepted by Padmavati super bazar.`;
+              message = `✅ *Order Confirmed!*\n\nHi ${order.customer.name || 'Customer'}! Your order #${order._id.substring(order._id.length - 6).toUpperCase()} has been *accepted* by Padmavati Super Bazar. We are preparing it for you! 🛒`;
           } else if (newStatus === 'Out for Delivery') {
-              message = `*OUT FOR DELIVERY*\n\nYour order #${order._id.substring(order._id.length - 6).toUpperCase()} is on its way to you!`;
+              message = `🚴 *Out for Delivery!*\n\nHi ${order.customer.name || 'Customer'}! Your order #${order._id.substring(order._id.length - 6).toUpperCase()} is *on its way* to you! Our delivery partner will arrive shortly. Total to pay: ₹${order.total} 🎉`;
+          } else if (newStatus === 'Rejected') {
+              message = `❌ *Order Update*\n\nHi ${order.customer.name || 'Customer'}, we're sorry but your order #${order._id.substring(order._id.length - 6).toUpperCase()} could not be fulfilled at this time. Please contact us for more details or place a new order. 🙏\n\nPadmavati Super Bazar`;
           }
           
           if (message) {
@@ -54,6 +57,9 @@ const OrdersTab = () => {
               window.open(whatsappUrl, '_blank');
           }
       }
+
+      // Refresh orders list after notification
+      await fetchOrders();
       
     } catch (error) {
       console.error('Error updating order:', error);

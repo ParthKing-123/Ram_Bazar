@@ -4,9 +4,12 @@ import { protect, adminGuard, riderGuard } from '../middleware/authMiddleware.js
 
 const router = express.Router();
 
-router.route('/').post(protect, createOrder).get(protect, riderGuard, getOrders);
-router.route('/:id').put(protect, riderGuard, updateOrder);
+// Must be before /:id to avoid route conflicts
 router.route('/customer/:id').get(protect, getCustomerOrders);
 router.route('/:id/rate').put(protect, rateOrder);
 
+router.route('/').post(protect, createOrder).get(protect, riderGuard, getOrders);
+router.route('/:id').put(protect, riderGuard, updateOrder);
+
 export default router;
+

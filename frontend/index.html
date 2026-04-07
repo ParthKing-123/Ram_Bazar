@@ -5,8 +5,101 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
     <title>Padmavati super bazar - Smart Ordering System</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { background: #fff; }
+
+      #splash {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: #ffffff;
+        transition: opacity 0.5s ease, transform 0.5s ease;
+      }
+      #splash.hide {
+        opacity: 0;
+        transform: scale(1.04);
+        pointer-events: none;
+      }
+      #splash-logo-wrap {
+        width: 100px;
+        height: 100px;
+        border-radius: 28px;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+        animation: splashPop 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+      }
+      #splash-logo-wrap img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      #splash-name {
+        margin-top: 18px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        font-size: 20px;
+        font-weight: 800;
+        color: #1a1a1a;
+        letter-spacing: -0.5px;
+        animation: splashFadeUp 0.5s 0.15s ease both;
+      }
+      #splash-tag {
+        margin-top: 5px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        color: #888;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        animation: splashFadeUp 0.5s 0.25s ease both;
+      }
+      #splash-dots {
+        position: absolute;
+        bottom: 48px;
+        display: flex;
+        gap: 6px;
+        animation: splashFadeUp 0.5s 0.35s ease both;
+      }
+      #splash-dots span {
+        width: 6px; height: 6px;
+        border-radius: 50%;
+        background: #2d6a4f;
+        animation: dotPulse 1.2s ease-in-out infinite;
+      }
+      #splash-dots span:nth-child(2) { animation-delay: 0.2s; }
+      #splash-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+      @keyframes splashPop {
+        from { opacity: 0; transform: scale(0.7); }
+        to   { opacity: 1; transform: scale(1); }
+      }
+      @keyframes splashFadeUp {
+        from { opacity: 0; transform: translateY(12px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes dotPulse {
+        0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+        40% { opacity: 1; transform: scale(1.2); }
+      }
+    </style>
   </head>
   <body>
+    <!-- Instant splash – shown before React loads -->
+    <div id="splash">
+      <div id="splash-logo-wrap">
+        <img src="/logo.jpg" alt="Padmavati Super Bazar" />
+      </div>
+      <div id="splash-name">Padmavati super bazar</div>
+      <div id="splash-tag">Pethvadgaon · Est. 2004</div>
+      <div id="splash-dots">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

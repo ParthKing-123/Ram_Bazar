@@ -188,8 +188,9 @@ const Auth = () => {
     if (!/^\d{10}$/.test(formData.phone)) {
       setError('Phone number must be exactly 10 digits.'); return;
     }
-    if (!formData.email.toLowerCase().endsWith('@gmail.com')) {
-      setError('Email must end with @gmail.com'); return;
+    // Email is optional — only validate format if provided
+    if (formData.email && !formData.email.toLowerCase().endsWith('@gmail.com')) {
+      setError('If provided, email must end with @gmail.com'); return;
     }
     if (formData.password.length < 6) {
       setError('Password must be at least 6 characters.'); return;
@@ -200,8 +201,8 @@ const Auth = () => {
 
     setLoading(true);
     try {
-      // Step 1: Check phone/email uniqueness without creating the account
-      await api.post('/customers/check', { phone: formData.phone, email: formData.email });
+      // Step 1: Check phone uniqueness (and email if provided)
+      await api.post('/customers/check', { phone: formData.phone, email: formData.email || null });
       setLoading(false);
       // Step 2: Location check — account created inside finishSuccess only if location passes
       checkLocationAndProceed(formData);
@@ -313,10 +314,10 @@ const Auth = () => {
               </div>
 
               <div>
-                <label className={labelClass}>Email Address</label>
-                <input type="email" required placeholder="yourname@gmail.com" value={formData.email}
+                <label className={labelClass}>Email Address <span className="text-gray-400 font-normal text-xs">(Optional)</span></label>
+                <input type="email" placeholder="yourname@gmail.com" value={formData.email}
                   onChange={e => setFormData({...formData, email: e.target.value})} className={inputClass} />
-                <p className="mt-1 text-xs text-gray-400">Must be a @gmail.com address</p>
+                <p className="mt-1 text-xs text-gray-400">If provided, must be a @gmail.com address</p>
               </div>
 
               <div>

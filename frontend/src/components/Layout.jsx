@@ -6,6 +6,7 @@ import useCustomerStore from '../store/useCustomerStore';
 import useSearchStore from '../store/useSearchStore';
 import useLanguageStore from '../store/useLanguageStore';
 import GroceryChatbot from './GroceryChatbot';
+import api from '../services/api';
 
 const LANGUAGES = [
   { code: 'en', label: 'English', short: 'EN' },
@@ -25,8 +26,16 @@ const Layout = () => {
   const [langMenuOpen, setLangMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
 
+  // Edit Profile State
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+  const [editFormData, setEditFormData] = useState({ name: '', email: '', address: '' });
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [updateError, setUpdateError] = useState('');
+
   const cartItemCount = cart.reduce((total, item) => total + item.quantity, 0);
   const currentLang = LANGUAGES.find(l => l.code === lang) || LANGUAGES[0];
+
+  const isActive = (path) => path === '/' ? location.pathname === '/' : location.pathname.startsWith(path);
 
   const navItems = [
     { to: '/',       icon: Home,          key: 'home' },
@@ -34,7 +43,44 @@ const Layout = () => {
     { to: '/about',  icon: Info,          key: 'about' },
   ];
 
-  const isActive = (path) => path === '/' ? location.pathname === '/' : location.pathname.startsWith(path);
+  // Profile Update Handlers
+  const openEditProfile = () => {
+    // Session Health Pre-Check
+    const storageKey = Object.keys(localStorage).find(k => k.toLowerCase() === 'rambazar_customer');
+    const storedData = storageKey ? localStorage.getItem(storageKey) : null;
+    const hasToken = storedData ? JSON.parse(storedData)?.token : false;
+
+    if (!hasToken) {
+      setUpdateError('Your session has expired. Please sign out and sign in again.');
+    }
+
+    setEditFormData({
+      name: customer?.name || '',
+      email: customer?.email || '',
+      address: customer?.address || '',
+    });
+    // Don't clear error if it was a session error
+    if (hasToken) setUpdateError('');
+    setIsEditProfileOpen(true);
+    setProfileMenuOpen(false);
+  };
+
+  const handleUpdateProfile = async (e) => {
+    e.preventDefault();
+    setIsUpdating(true);
+    setUpdateError('');
+
+    try {
+      const res = await api.put(`/customers/${customer._id}`, editFormData);
+      // Explicitly merge to ensure token (which is in `customer`) is preserved if res.data is partial
+      useCustomerStore.getState().setCustomer({ ...customer, ...res.data });
+      setIsEditProfileOpen(false);
+    } catch (err) {
+      setUpdateError(err.response?.data?.message || 'Failed to update profile.');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -164,20 +210,22 @@ const Layout = () => {
                           </div>
                         </div>
                         <div className="p-3 space-y-1">
-                          <div className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700">
-                            <Phone className="w-4 h-4 text-brand-500 shrink-0" />
+                          <button
+                            onClick={openEditProfile}
+                            className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-bold text-brand-700 hover:bg-brand-50 rounded-xl transition-colors text-left"
+                          >
+                            <User className="w-4 h-4" /> Edit Profile
+                          </button>
+                          <div className="flex items-center gap-3 px-3 py-2 text-sm text-gray-500 opacity-60">
+                            <Phone className="w-4 h-4 shrink-0" />
                             <span className="font-medium">{customer.phone}</span>
                           </div>
                           {customer.email && (
-                            <div className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700">
-                              <Mail className="w-4 h-4 text-blue-500 shrink-0" />
-                              <span className="truncate font-medium">{customer.email}</span>
+                            <div className="flex items-center gap-3 px-3 py-2 text-sm text-gray-500 opacity-60">
+                               <Mail className="w-4 h-4 shrink-0" />
+                               <span className="truncate font-medium">{customer.email}</span>
                             </div>
                           )}
-                          <div className="flex items-start gap-3 px-3 py-2 text-sm text-gray-700">
-                            <MapPin className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-                            <span className="line-clamp-2 leading-tight font-medium text-xs">{customer.address}</span>
-                          </div>
                         </div>
                         <div className="p-2 border-t border-gray-100 bg-gray-50">
                           <button
@@ -312,35 +360,34 @@ const Layout = () => {
               </div>
             </div>
             <div className="p-5 space-y-3">
-              <div className="flex items-center gap-4 bg-gray-50 p-3 rounded-2xl border border-gray-100">
+              <button
+                onClick={openEditProfile}
+                className="w-full flex items-center gap-4 bg-brand-50 p-4 rounded-2xl border border-brand-100 active:scale-[0.98] transition-all"
+              >
                 <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm shrink-0">
-                  <Phone className="w-5 h-5 text-brand-500" />
+                  <User className="w-5 h-5 text-brand-600" />
                 </div>
-                <span className="font-bold text-gray-700">{customer.phone}</span>
-              </div>
-              {customer.email && (
-                <div className="flex items-center gap-4 bg-gray-50 p-3 rounded-2xl border border-gray-100">
-                  <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm shrink-0">
-                    <Mail className="w-5 h-5 text-blue-500" />
-                  </div>
-                  <span className="font-bold text-gray-700 truncate">{customer.email}</span>
+                <div className="text-left">
+                  <p className="font-bold text-brand-900">Edit Profile</p>
+                  <p className="text-xs text-brand-600 font-medium opacity-70">Update your name or address</p>
                 </div>
-              )}
-              <div className="flex items-center gap-4 bg-gray-50 p-3 rounded-2xl border border-gray-100">
+              </button>
+
+              <div className="flex items-center gap-4 bg-gray-50/50 p-3.5 rounded-2xl border border-gray-100 opacity-60">
                 <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm shrink-0">
-                  <MapPin className="w-5 h-5 text-red-500" />
+                  <Phone className="w-5 h-5 text-gray-400" />
                 </div>
-                <span className="font-bold text-gray-700 text-sm leading-tight line-clamp-2">{customer.address}</span>
+                <span className="font-bold text-gray-500">{customer.phone}</span>
               </div>
             </div>
-            <div className="p-4 bg-white border-t border-gray-100 pb-8">
+            <div className="p-4 bg-white border-t border-gray-100 pb-8 flex gap-3">
               <button
                 onClick={() => {
                   clearCustomer();
                   setProfileMenuOpen(false);
                   navigate('/onboarding');
                 }}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3.5 text-base font-bold text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-colors"
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-3.5 text-sm font-bold text-red-600 bg-red-50 hover:bg-red-100 rounded-2xl transition-colors"
                >
                 <LogOut className="w-5 h-5" /> Sign Out
               </button>
@@ -350,8 +397,109 @@ const Layout = () => {
       )}
 
       <GroceryChatbot />
+
+      {/* Edit Profile Modal */}
+      {isEditProfileOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-md" onClick={() => setIsEditProfileOpen(false)} />
+          <div className="relative w-full max-w-md bg-white rounded-[2.5rem] shadow-2xl overflow-hidden animate-[modal-pop_0.3s_cubic-bezier(0.34,1.56,0.64,1)]">
+            <div className="p-8 pb-6 border-b border-gray-50 flex items-center justify-between">
+              <div>
+                <h3 className="text-2xl font-black text-gray-900 tracking-tight">Edit Profile</h3>
+                <p className="text-sm text-gray-500 font-medium mt-1">Keep your details up to date</p>
+              </div>
+              <button
+                onClick={() => setIsEditProfileOpen(false)}
+                className="p-2 hover:bg-gray-100 rounded-2xl transition-colors"
+              >
+                <Search className="w-6 h-6 text-gray-400 rotate-45" />
+              </button>
+            </div>
+
+            <form onSubmit={handleUpdateProfile} className="p-8 pt-6 space-y-5">
+              {updateError && (
+                <div className="p-3 bg-red-50 text-red-600 text-sm font-semibold rounded-2xl border border-red-100 flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                  {updateError}
+                </div>
+              )}
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-black text-gray-400 uppercase tracking-widest px-1">Full Name</label>
+                <div className="relative">
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input
+                    required
+                    type="text"
+                    value={editFormData.name}
+                    onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                    className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 font-bold text-gray-800 transition-all text-sm"
+                    placeholder="Ram Kumar"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-black text-gray-400 uppercase tracking-widest px-1">Email <span className="text-gray-300 font-bold capitalize">(Optional)</span></label>
+                <div className="relative">
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input
+                    type="email"
+                    value={editFormData.email}
+                    onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
+                    className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 font-bold text-gray-800 transition-all text-sm"
+                    placeholder="yourname@gmail.com"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-black text-gray-400 uppercase tracking-widest px-1">Delivery Address</label>
+                <div className="relative">
+                  <MapPin className="absolute left-4 top-[1.125rem] w-4 h-4 text-gray-400" />
+                  <textarea
+                    required
+                    rows="3"
+                    value={editFormData.address}
+                    onChange={(e) => setEditFormData({ ...editFormData, address: e.target.value })}
+                    className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 font-bold text-gray-800 transition-all text-sm resize-none leading-relaxed"
+                    placeholder="House number, Street name, Landmark"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-4 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setIsEditProfileOpen(false)}
+                  className="flex-1 py-4 bg-gray-50 text-gray-500 font-black rounded-2xl hover:bg-gray-100 transition-all active:scale-[0.98]"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isUpdating}
+                  className="flex-1 py-4 bg-brand-700 text-white font-black rounded-2xl shadow-xl shadow-brand-200 hover:bg-brand-800 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {isUpdating ? (
+                    <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes modal-pop {
+          from { transform: scale(0.9); opacity: 0; }
+          to { transform: scale(1); opacity: 1; }
+        }
+      `}</style>
     </div>
   );
 };
+
 
 export default Layout;

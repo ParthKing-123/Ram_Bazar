@@ -5,12 +5,13 @@ import Staff from '../models/Staff.js';
 export const protect = async (req, res, next) => {
   let token;
 
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith('Bearer')
-  ) {
+  const authHeader = req.headers.authorization;
+  console.log(`[Auth Middleware] Incoming Header: ${authHeader || 'NONE'}`);
+
+  if (authHeader && authHeader.startsWith('Bearer')) {
     try {
-      token = req.headers.authorization.split(' ')[1];
+      token = authHeader.split(' ')[1];
+      console.log(`[Auth Middleware] Parsed Token: ${token ? 'YES' : 'EMPTY'}`);
       const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret_key_123');
       
       if (decoded.role) {
@@ -31,7 +32,7 @@ export const protect = async (req, res, next) => {
   }
 
   if (!token) {
-    res.status(401).json({ message: 'Not authorized, no token' });
+    return res.status(401).json({ message: 'Not authorized, no token' });
   }
 };
 

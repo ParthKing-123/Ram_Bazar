@@ -9,19 +9,27 @@ const api = axios.create({
 
 api.interceptors.request.use(
   (config) => {
-    // Priority: staff token (Admin/Rider) > customer token
+    // Session Health Diagnostics
     const staffToken = localStorage.getItem('staff_token');
     
     let customerToken = null;
     try {
-      const customerData = JSON.parse(localStorage.getItem('rambazar_customer'));
-      customerToken = customerData?.token || null;
-    } catch (_) {}
+      // Robust key check: Find the first key that looks like rambazar_customer (case-insensitive)
+      const storageKey = Object.keys(localStorage).find(k => k.toLowerCase() === 'rambazar_customer');
+      if (storageKey) {
+        const storedData = localStorage.getItem(storageKey);
+        const customerData = JSON.parse(storedData);
+        customerToken = customerData?.token || null;
+      }
+    } catch (e) {
+      console.error("[Session] Error parsing token:", e);
+    }
 
     const finalToken = staffToken || customerToken;
+    console.log(`[API Request] Token Status: ${finalToken ? '✅ ACTIVE' : '❌ MISSING'} | Path: ${config.url}`);
 
-    if (finalToken) {
-      config.headers.Authorization = `Bearer ${finalToken}`;
+    if (finalToken && finalToken !== 'null' && finalToken !== '') {
+      config.headers['Authorization'] = `Bearer ${finalToken}`;
     }
     return config;
   },

@@ -108,15 +108,19 @@ const RiderDashboard = () => {
                         <div className="bg-gray-50 rounded-2xl p-4 mb-4 space-y-3 border border-gray-100">
                              <div className="flex items-start gap-3">
                                  <User className="w-5 h-5 text-gray-400 shrink-0 mt-0.5" />
-                                 <span className="text-sm font-semibold text-gray-900">{order.customer?.name}</span>
+                                 <span className="text-sm font-semibold text-gray-900">{order.customer?.name || <span className="text-red-400 italic">Name not found</span>}</span>
                              </div>
                              <div className="flex items-start gap-3">
                                  <Phone className="w-5 h-5 text-gray-400 shrink-0 mt-0.5" />
-                                 <a href={`tel:${order.customer?.phone}`} className="text-sm text-brand-700 font-medium hover:underline">{order.customer?.phone}</a>
+                                 {order.customer?.phone ? (
+                                     <a href={`tel:${order.customer.phone}`} className="text-sm text-brand-700 font-medium hover:underline">{order.customer.phone}</a>
+                                 ) : (
+                                     <span className="text-sm text-red-400 italic">Phone not found</span>
+                                 )}
                              </div>
                              <div className="flex items-start gap-3">
                                  <MapPin className="w-5 h-5 text-gray-400 shrink-0 mt-0.5" />
-                                 <span className="text-sm text-gray-700 leading-relaxed">{order.customer?.address}</span>
+                                 <span className="text-sm text-gray-700 leading-relaxed">{order.customer?.address || <span className="text-red-400 italic">Address not found</span>}</span>
                              </div>
                         </div>
 
