@@ -7,9 +7,18 @@ import generateToken from '../utils/generateToken.js';
 export const authStaff = async (req, res) => {
   try {
     const { username, password } = req.body;
+    console.log(`[Auth attempt] Staff: ${username}`);
     const staff = await Staff.findOne({ username });
 
-    if (staff && (await staff.matchPassword(password))) {
+    if (!staff) {
+      console.log(`[Auth failed] Staff user not found: ${username}`);
+      return res.status(401).json({ message: 'Invalid username or password' });
+    }
+
+    const isMatch = await staff.matchPassword(password);
+    console.log(`[Auth trace] User found. Password match: ${isMatch}`);
+
+    if (isMatch) {
       res.json({
         _id: staff._id,
         username: staff.username,
@@ -20,6 +29,7 @@ export const authStaff = async (req, res) => {
       res.status(401).json({ message: 'Invalid username or password' });
     }
   } catch (error) {
+    console.error(`[Auth Error] ${username || 'unknown'}:`, error.message);
     res.status(500).json({ message: error.message });
   }
 };

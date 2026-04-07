@@ -74,12 +74,14 @@ export const createCustomer = async (req, res) => {
     const customer = new Customer({
       name,
       phone,
-      email: (email && email.trim() !== '') ? email.toLowerCase().trim() : undefined,
+      email: (email && email.trim() !== '') ? email.toLowerCase().trim() : null,
       address,
       password: hashedPassword
     });
 
     const createdCustomer = await customer.save();
+    console.log(`[Registration] SUCCESS for phone ${phone}`);
+
     res.status(201).json({
       _id: createdCustomer._id,
       name: createdCustomer.name,
@@ -89,7 +91,8 @@ export const createCustomer = async (req, res) => {
       token: generateToken(createdCustomer._id),
     });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.error(`[Registration Error] phone ${req.body.phone}:`, error.message);
+    res.status(500).json({ message: error.message });
   }
 };
 

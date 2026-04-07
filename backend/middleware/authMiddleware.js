@@ -4,14 +4,11 @@ import Staff from '../models/Staff.js';
 
 export const protect = async (req, res, next) => {
   let token;
-
   const authHeader = req.headers.authorization;
-  console.log(`[Auth Middleware] Incoming Header: ${authHeader || 'NONE'}`);
 
   if (authHeader && authHeader.startsWith('Bearer')) {
     try {
       token = authHeader.split(' ')[1];
-      console.log(`[Auth Middleware] Parsed Token: ${token ? 'YES' : 'EMPTY'}`);
       const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret_key_123');
       
       if (decoded.role) {
@@ -21,18 +18,17 @@ export const protect = async (req, res, next) => {
       }
 
       if (!req.user) {
-        return res.status(401).json({ message: 'Not authorized, user not found' });
+        return res.status(401).json({ message: 'Session expired, user not found' });
       }
 
-      next();
+      return next();
     } catch (error) {
-      console.error(error);
-      res.status(401).json({ message: 'Not authorized, token failed' });
+      return res.status(401).json({ message: 'Session invalid' });
     }
   }
 
   if (!token) {
-    return res.status(401).json({ message: 'Not authorized, no token' });
+    return res.status(401).json({ message: 'Authentication required' });
   }
 };
 

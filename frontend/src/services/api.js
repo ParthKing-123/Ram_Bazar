@@ -38,4 +38,13 @@ api.interceptors.request.use(
   }
 );
 
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    // Console log full error for system recovery diagnosis
+    console.error(`[API Error] ${error.response?.status} - ${error.config?.url}:`, error.response?.data);
+    return Promise.reject(error);
+  }
+);
+
 export default api;
