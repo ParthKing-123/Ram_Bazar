@@ -41,7 +41,7 @@ export const checkCustomer = async (req, res) => {
 // @access  Public
 export const createCustomer = async (req, res) => {
   try {
-    const { name, phone, email, address, password } = req.body;
+    const { name, phone, email, address, password, referredBy } = req.body;
 
     // ── Server-side validation ──────────────────────────────
     const phoneRegex = /^\d{10}$/;
@@ -71,15 +71,36 @@ export const createCustomer = async (req, res) => {
     const salt = await bcryptjs.genSalt(10);
     const hashedPassword = await bcryptjs.hash(password, salt);
 
+    let startingPoints = 100; // Signup reward
+    let referrerCustomer = null;
+
+    if (referredBy && typeof referredBy === 'string' && referredBy.trim() !== '') {
+      referrerCustomer = await Customer.findOne({ referralCode: referredBy.trim().toUpperCase() });
+      if (referrerCustomer) {
+        startingPoints += 200; // Bonus for using a referral code
+      }
+    }
+
+    const generateReferralCode = () => Math.random().toString(36).substring(2, 8).toUpperCase();
+
     const customer = new Customer({
       name,
       phone,
       email: (email && email.trim() !== '') ? email.toLowerCase().trim() : null,
       address,
-      password: hashedPassword
+      password: hashedPassword,
+      referralCode: generateReferralCode(),
+      points: startingPoints, 
+      signupPointsAwarded: true
     });
 
     const createdCustomer = await customer.save();
+    
+    // Reward the referrer if valid
+    if (referrerCustomer) {
+      referrerCustomer.points += 200;
+      await referrerCustomer.save();
+    }
     console.log(`[Registration] SUCCESS for phone ${phone}`);
 
     res.status(201).json({
@@ -88,6 +109,10 @@ export const createCustomer = async (req, res) => {
       phone: createdCustomer.phone,
       email: createdCustomer.email,
       address: createdCustomer.address,
+      profileImage: createdCustomer.profileImage,
+      referralCode: createdCustomer.referralCode,
+      points: createdCustomer.points,
+      coupons: createdCustomer.coupons,
       token: generateToken(createdCustomer._id),
     });
   } catch (error) {
@@ -119,6 +144,10 @@ export const loginCustomer = async (req, res) => {
       phone: customer.phone,
       email: customer.email,
       address: customer.address,
+      profileImage: customer.profileImage,
+      referralCode: customer.referralCode,
+      points: customer.points,
+      coupons: customer.coupons,
       token: generateToken(customer._id),
     });
   } catch (error) {
@@ -131,7 +160,7 @@ export const loginCustomer = async (req, res) => {
 // @access  Private (customer)
 export const updateCustomer = async (req, res) => {
   try {
-    const { name, email, address } = req.body;
+    const { name, email, address, phone, profileImage } = req.body;
     const customer = await Customer.findById(req.params.id);
 
     if (!customer) {
@@ -158,6 +187,14 @@ export const updateCustomer = async (req, res) => {
 
     if (name)    customer.name    = name;
     if (address) customer.address = address;
+    if (phone)   customer.phone   = phone;
+    if (profileImage !== undefined) customer.profileImage = profileImage;
+
+    // Profile completion reward
+    if (!customer.profilePointsAwarded && customer.email && customer.profileImage) {
+      customer.points += 100;
+      customer.profilePointsAwarded = true;
+    }
 
     const updated = await customer.save();
 
@@ -167,10 +204,44 @@ export const updateCustomer = async (req, res) => {
       phone:   updated.phone,
       email:   updated.email,
       address: updated.address,
+      profileImage: updated.profileImage,
+      points:  updated.points,
+      coupons: updated.coupons,
       // Always return current token so frontend can keep it in store
       token:   req.headers.authorization?.startsWith('Bearer ') 
                ? req.headers.authorization.split(' ')[1] 
                : null,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get customer by ID
+// @route   GET /api/customers/:id
+// @access  Private (customer)
+export const getCustomer = async (req, res) => {
+  try {
+    let customer = await Customer.findById(req.params.id);
+    if (!customer) {
+      return res.status(404).json({ message: 'Customer not found' });
+    }
+
+    if (!customer.referralCode) {
+      customer.referralCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+      customer = await customer.save();
+    }
+
+    res.status(200).json({
+      _id: customer._id,
+      name: customer.name,
+      phone: customer.phone,
+      email: customer.email,
+      address: customer.address,
+      profileImage: customer.profileImage,
+      referralCode: customer.referralCode,
+      points: customer.points,
+      coupons: customer.coupons,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });

@@ -1,5 +1,6 @@
 import Order from '../models/Order.js';
 import Product from '../models/Product.js';
+import Customer from '../models/Customer.js';
 import mongoose from 'mongoose';
 
 // @desc    Create new order
@@ -7,22 +8,87 @@ import mongoose from 'mongoose';
 // @access  Public
 export const createOrder = async (req, res) => {
   try {
-    const { items, total, paymentMethod } = req.body;
+    const { items, total, paymentMethod, couponCode } = req.body;
 
     if (items && items.length === 0) {
       return res.status(400).json({ message: 'No order items' });
     }
 
-    // Use authenticated user's ID from JWT — prevents customer impersonation
+    const customer = await Customer.findById(req.user._id);
+    if (!customer) {
+      return res.status(404).json({ message: 'Customer not found' });
+    }
+
+    let finalTotal = total;
+    let discountApplied = 0;
+
+    // Validate and Apply Coupon
+    if (couponCode) {
+      const couponIndex = customer.coupons.findIndex(c => c.code === couponCode);
+      if (couponIndex !== -1) {
+        const coupon = customer.coupons[couponIndex];
+        // Check expiration
+        if (new Date() > new Date(coupon.expiresAt)) {
+          return res.status(400).json({ message: 'Coupon expired' });
+        }
+        
+        if (coupon.isFreeProduct) {
+          // Find highest priced item up to 200
+          let highestEligible = 0;
+          items.forEach(item => {
+            if (item.price <= 200 && item.price > highestEligible) {
+              highestEligible = item.price;
+            }
+          });
+          discountApplied = highestEligible; // Max 200 discount for a single product
+        } else {
+          discountApplied = coupon.discount;
+        }
+
+        finalTotal -= discountApplied;
+        if (finalTotal < 0) finalTotal = 0;
+        
+        // Remove used coupon
+        customer.coupons.splice(couponIndex, 1);
+      } else {
+        return res.status(400).json({ message: 'Invalid or expired coupon' });
+      }
+    }
+
+    // Use authenticated user's ID from JWT
     const order = new Order({
       customer: req.user._id,
       items,
-      total,
+      total: finalTotal,
+      couponCode: couponCode || null,
+      discount: discountApplied,
       paymentMethod: paymentMethod || 'Offline',
       status: 'Pending'
     });
 
     const createdOrder = await order.save();
+
+    // Rewards Logic
+    customer.totalOrders += 1;
+    
+    // First Order Reward
+    if (!customer.firstOrderPointsAwarded) {
+      customer.points += 50;
+      customer.firstOrderPointsAwarded = true;
+    }
+
+    // 10th Order Free Product Reward
+    if (customer.totalOrders === 10) {
+      customer.coupons.push({
+        code: 'FREE-PRD-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
+        discount: 200, // Capped at 200
+        isFreeProduct: true,
+        expiresAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000) // 60 days expiry
+      });
+    }
+
+    await customer.save(); // This will also trigger the point->coupon conversion hook if points >= 500
+
     res.status(201).json(createdOrder);
   } catch (error) {
     res.status(400).json({ message: error.message });

@@ -29,7 +29,7 @@ export const authStaff = async (req, res) => {
       res.status(401).json({ message: 'Invalid username or password' });
     }
   } catch (error) {
-    console.error(`[Auth Error] ${username || 'unknown'}:`, error.message);
+    console.error(`[Auth Error] ${req.body?.username || 'unknown'}:`, error.message);
     res.status(500).json({ message: error.message });
   }
 };

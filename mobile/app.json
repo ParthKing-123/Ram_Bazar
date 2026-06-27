@@ -1,0 +1,39 @@
+{
+  "expo": {
+    "name": "Padmavati Super Bazar",
+    "slug": "padmavati-super-bazar",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.parth.padmavatisuperbazar",
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-secure-store"
+    ],
+    "updates": {
+      "url": "https://u.expo.dev/dea8966a-5aca-4148-9e32-c5b0187102fa"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "dea8966a-5aca-4148-9e32-c5b0187102fa"
+      }
+    }
+  }
+}

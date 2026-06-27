@@ -1,0 +1,51 @@
+import axios from 'axios';
+import * as SecureStore from 'expo-secure-store';
+
+// Use local network IP since we are testing on a physical device
+const API_URL = 'http://10.100.19.61:5000/api';
+
+const api = axios.create({
+  baseURL: API_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+api.interceptors.request.use(
+  async (config) => {
+    try {
+      const staffToken = await SecureStore.getItemAsync('staff_token');
+      
+      let customerToken = null;
+      const storedData = await SecureStore.getItemAsync('rambazar_customer');
+      if (storedData) {
+        const customerData = JSON.parse(storedData);
+        customerToken = customerData?.token || null;
+      }
+
+      const finalToken = staffToken || customerToken;
+      console.log(`[API Request] Token Status: ${finalToken ? '✅ ACTIVE' : '❌ MISSING'} | Path: ${config.url}`);
+
+      if (finalToken && finalToken !== 'null' && finalToken !== '') {
+        config.headers['Authorization'] = `Bearer ${finalToken}`;
+      }
+    } catch (e) {
+      console.error("[Session] Error parsing token:", e);
+    }
+    
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.error(`[API Error] ${error.response?.status} - ${error.config?.url}:`, error.response?.data);
+    return Promise.reject(error);
+  }
+);
+
+export default api;

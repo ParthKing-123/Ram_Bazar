@@ -1,7 +1,7 @@
 import path from 'path';
 import express from 'express';
 import multer from 'multer';
-import { protect, adminGuard } from '../middleware/authMiddleware.js';
+import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -37,7 +37,7 @@ const upload = multer({
   },
 });
 
-router.post('/', protect, adminGuard, upload.single('image'), (req, res) => {
+router.post('/', protect, upload.single('image'), (req, res) => {
   res.json({ imageUrl: `/${req.file.path.replace(/\\/g, '/')}` });
 });
 
