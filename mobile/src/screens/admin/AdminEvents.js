@@ -26,6 +26,7 @@ export default function AdminEvents() {
   
   // For adding a new product inside the event
   const [newProduct, setNewProduct] = useState({ name: '', price: '', unit: '1 Piece', stock: '100' });
+  const [newProductImage, setNewProductImage] = useState(null);
 
   useEffect(() => {
     fetchEvents();
@@ -65,6 +66,7 @@ export default function AdminEvents() {
     }
     setImageFile(null);
     setNewProduct({ name: '', price: '', unit: '1 Piece', stock: '100' });
+    setNewProductImage(null);
     setIsModalOpen(true);
   };
 
@@ -73,7 +75,7 @@ export default function AdminEvents() {
     setEditingEvent(null);
   };
 
-  const pickImage = async () => {
+  const pickImage = async (setTarget) => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsEditing: true,
@@ -82,7 +84,7 @@ export default function AdminEvents() {
     });
 
     if (!result.canceled) {
-      setImageFile(result.assets[0]);
+      setTarget(result.assets[0]);
     }
   };
 
@@ -100,20 +102,27 @@ export default function AdminEvents() {
     return res.data.imageUrl;
   };
 
-  const addEventProduct = () => {
+  const addEventProduct = async () => {
     if (!newProduct.name || !newProduct.price) {
       Alert.alert('Validation Error', 'Please enter a product name and price.');
       return;
     }
+    
+    let uploadedProductImage = '';
+    if (newProductImage) {
+       uploadedProductImage = await uploadImage(newProductImage);
+    }
+    
     const productToAdd = {
       name: newProduct.name,
       price: Number(newProduct.price),
       unit: newProduct.unit,
       stock: Number(newProduct.stock),
-      image: '' // we skip per-product image upload on events to save space on mobile UI
+      image: uploadedProductImage
     };
     setFormData(prev => ({ ...prev, products: [...prev.products, productToAdd] }));
     setNewProduct({ name: '', price: '', unit: '1 Piece', stock: '100' });
+    setNewProductImage(null);
   };
 
   const removeEventProduct = (index) => {
@@ -271,7 +280,7 @@ export default function AdminEvents() {
 
           <ScrollView className="p-5 flex-1" showsVerticalScrollIndicator={false}>
             {/* Image Picker */}
-            <TouchableOpacity onPress={pickImage} className="w-full h-40 bg-gray-200 rounded-3xl mb-6 items-center justify-center overflow-hidden border border-gray-300 shadow-sm">
+            <TouchableOpacity onPress={() => pickImage(setImageFile)} className="w-full h-40 bg-gray-200 rounded-3xl mb-6 items-center justify-center overflow-hidden border border-gray-300 shadow-sm">
               {imageFile ? (
                  <Image source={{ uri: imageFile.uri }} className="w-full h-full" resizeMode="cover" />
               ) : formData.image ? (
@@ -323,6 +332,14 @@ export default function AdminEvents() {
                        <TextInput value={newProduct.stock} onChangeText={t => setNewProduct({...newProduct, stock: t})} keyboardType="numeric" className="bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-900" placeholder="Stock Qty" />
                     </View>
                  </View>
+
+                 <TouchableOpacity onPress={() => pickImage(setNewProductImage)} className="bg-white border border-dashed border-gray-300 rounded-xl py-3 items-center justify-center mb-1">
+                    {newProductImage ? (
+                      <Text className="text-green-600 font-bold text-xs"><CheckCircle size={14} color="#16a34a" /> Image Selected</Text>
+                    ) : (
+                      <Text className="text-gray-500 font-bold text-xs flex-row items-center"><ImageIcon size={14} color="#6b7280" /> Add Product Photo</Text>
+                    )}
+                 </TouchableOpacity>
 
                  <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row py-1">
                   {UNITS.map(u => (

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as SecureStore from 'expo-secure-store';
+import useLanguageStore from '../../store/useLanguageStore';
 
 import AdminOrders from './AdminOrders';
 import AdminProducts from './AdminProducts';
@@ -10,6 +11,8 @@ import AdminEvents from './AdminEvents';
 export default function AdminDashboard({ navigation }) {
   const [activeTab, setActiveTab] = useState('orders');
   const [isAuth, setIsAuth] = useState(false);
+
+  const { t } = useLanguageStore();
 
   useEffect(() => {
     checkAuth();
@@ -35,11 +38,11 @@ export default function AdminDashboard({ navigation }) {
     <SafeAreaView className="flex-1 bg-gray-50">
       <View className="px-4 pt-6 pb-4 flex-row justify-between items-center border-b border-gray-200 bg-white shadow-sm elevation-1 z-10">
         <View>
-          <Text className="text-2xl font-black text-gray-900 tracking-tight">Admin Panel</Text>
-          <Text className="text-green-600 font-bold text-xs uppercase tracking-wider">Store Management</Text>
+          <Text className="text-2xl font-black text-gray-900 tracking-tight">{t('admin_panel') || 'Admin Panel'}</Text>
+          <Text className="text-green-600 font-bold text-xs uppercase tracking-wider">{t('manage_products') || 'Store Management'}</Text>
         </View>
         <TouchableOpacity onPress={logout} className="bg-red-50 px-4 py-2 rounded-xl border border-red-100">
-          <Text className="text-red-600 font-bold">Logout</Text>
+          <Text className="text-red-600 font-bold">{t('logout') || 'Logout'}</Text>
         </TouchableOpacity>
       </View>
 
@@ -48,19 +51,19 @@ export default function AdminDashboard({ navigation }) {
           className={`flex-1 py-2.5 rounded-xl items-center ${activeTab === 'orders' ? 'bg-green-600' : 'bg-gray-100'}`}
           onPress={() => setActiveTab('orders')}
         >
-          <Text className={`font-bold text-sm ${activeTab === 'orders' ? 'text-white' : 'text-gray-700'}`}>Orders</Text>
+          <Text className={`font-bold text-sm ${activeTab === 'orders' ? 'text-white' : 'text-gray-700'}`}>{t('orders') || 'Orders'}</Text>
         </TouchableOpacity>
         <TouchableOpacity 
           className={`flex-1 py-2.5 rounded-xl items-center ${activeTab === 'products' ? 'bg-green-600' : 'bg-gray-100'}`}
           onPress={() => setActiveTab('products')}
         >
-          <Text className={`font-bold text-sm ${activeTab === 'products' ? 'text-white' : 'text-gray-700'}`}>Products</Text>
+          <Text className={`font-bold text-sm ${activeTab === 'products' ? 'text-white' : 'text-gray-700'}`}>{t('products') || 'Products'}</Text>
         </TouchableOpacity>
         <TouchableOpacity 
           className={`flex-1 py-2.5 rounded-xl items-center ${activeTab === 'events' ? 'bg-green-600' : 'bg-gray-100'}`}
           onPress={() => setActiveTab('events')}
         >
-          <Text className={`font-bold text-sm ${activeTab === 'events' ? 'text-white' : 'text-gray-700'}`}>Events</Text>
+          <Text className={`font-bold text-sm ${activeTab === 'events' ? 'text-white' : 'text-gray-700'}`}>{t('events') || 'Events'}</Text>
         </TouchableOpacity>
       </View>
 

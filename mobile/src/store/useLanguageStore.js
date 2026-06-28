@@ -66,7 +66,10 @@ const translations = {
     share_code: "Share your referral code with a friend",
     my_rewards: "My Rewards",
     status: "Status",
-    recent_orders: "Recent Orders"
+    recent_orders: "Recent Orders",
+    only: "Only",
+    left: "left",
+    out_of_stock: "Out of Stock"
   },
   mr: {
     welcome: "स्वागत आहे",
@@ -133,7 +136,10 @@ const translations = {
     share_code: "तुमचा रेफरल कोड मित्रासोबत शेअर करा",
     my_rewards: "माझे बक्षिसे",
     status: "स्थिती",
-    recent_orders: "अलीकडील ऑर्डर्स"
+    recent_orders: "अलीकडील ऑर्डर्स",
+    only: "फक्त",
+    left: "शिल्लक",
+    out_of_stock: "स्टॉक संपला"
   }
 };
 

@@ -113,6 +113,8 @@ export const createCustomer = async (req, res) => {
       referralCode: createdCustomer.referralCode,
       points: createdCustomer.points,
       coupons: createdCustomer.coupons,
+      profilePointsAwarded: createdCustomer.profilePointsAwarded,
+      signupPointsAwarded: createdCustomer.signupPointsAwarded,
       token: generateToken(createdCustomer._id),
     });
   } catch (error) {
@@ -148,6 +150,8 @@ export const loginCustomer = async (req, res) => {
       referralCode: customer.referralCode,
       points: customer.points,
       coupons: customer.coupons,
+      profilePointsAwarded: customer.profilePointsAwarded,
+      signupPointsAwarded: customer.signupPointsAwarded,
       token: generateToken(customer._id),
     });
   } catch (error) {
@@ -204,6 +208,8 @@ export const updateCustomer = async (req, res) => {
       profileImage: updated.profileImage,
       points:  updated.points,
       coupons: updated.coupons,
+      profilePointsAwarded: updated.profilePointsAwarded,
+      signupPointsAwarded: updated.signupPointsAwarded,
       // Always return current token so frontend can keep it in store
       token:   req.headers.authorization?.startsWith('Bearer ') 
                ? req.headers.authorization.split(' ')[1] 
@@ -239,6 +245,8 @@ export const getCustomer = async (req, res) => {
       referralCode: customer.referralCode,
       points: customer.points,
       coupons: customer.coupons,
+      profilePointsAwarded: customer.profilePointsAwarded,
+      signupPointsAwarded: customer.signupPointsAwarded,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });

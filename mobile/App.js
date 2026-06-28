@@ -6,6 +6,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Home, ClipboardList, Info, User } from 'lucide-react-native';
 import { StatusBar } from 'expo-status-bar';
+import { useFonts, Outfit_400Regular, Outfit_700Bold, Outfit_900Black } from '@expo-google-fonts/outfit';
 
 import LoginScreen from './src/screens/customer/LoginScreen';
 import SignupScreen from './src/screens/customer/SignupScreen';
@@ -26,6 +27,7 @@ const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
 function MainTabNavigator() {
+  const { isDarkMode } = useThemeStore();
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -48,7 +50,7 @@ function MainTabNavigator() {
           right: 20,
           borderRadius: 30,
           borderTopWidth: 0,
-          backgroundColor: '#ffffff',
+          backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
           height: 64,
           paddingBottom: 0,
           paddingTop: 0,
@@ -60,7 +62,7 @@ function MainTabNavigator() {
         },
         tabBarLabelStyle: {
           fontSize: 10,
-          fontWeight: 'bold',
+          fontFamily: 'Outfit_700Bold',
         }
       })}
     >
@@ -76,11 +78,17 @@ export default function App() {
   const { initCustomer, isInitialized } = useCustomerStore();
   const { isDarkMode } = useThemeStore();
 
+  let [fontsLoaded] = useFonts({
+    Outfit_400Regular,
+    Outfit_700Bold,
+    Outfit_900Black,
+  });
+
   useEffect(() => {
     initCustomer();
   }, []);
 
-  if (!isInitialized) return null; // Or a splash screen
+  if (!isInitialized || !fontsLoaded) return null; // Or a splash screen
 
   return (
     <View className={`flex-1 ${isDarkMode ? 'dark bg-slate-900' : 'bg-white'}`}>

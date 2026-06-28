@@ -22,7 +22,8 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-font"
     ],
     "updates": {
       "url": "https://u.expo.dev/dea8966a-5aca-4148-9e32-c5b0187102fa"
