@@ -5,7 +5,9 @@ import { ShoppingCart } from 'lucide-react-native';
 import useCustomerStore from '../../store/useCustomerStore';
 import useCartStore from '../../store/useCartStore';
 import useSearchStore from '../../store/useSearchStore';
-import api from '../../services/api';
+import useLanguageStore from '../../store/useLanguageStore';
+import useThemeStore from '../../store/useThemeStore';
+import api, { BASE_URL } from '../../services/api';
 import ProductCard from '../../components/ProductCard';
 
 const CATEGORIES = ['All', 'Grocery', 'Provision', 'Household', 'Loose Grocery', 'Travel Accessories'];
@@ -14,6 +16,8 @@ export default function HomeScreen({ navigation }) {
   const { customer } = useCustomerStore();
   const { cart, getCartTotal } = useCartStore();
   const { selectedCategory, setSelectedCategory, searchTerm } = useSearchStore();
+  const { t } = useLanguageStore();
+  const { isDarkMode } = useThemeStore();
   
   const [products, setProducts] = useState([]);
   const [events, setEvents] = useState([]);
@@ -52,10 +56,10 @@ export default function HomeScreen({ navigation }) {
   const renderHeader = () => (
     <View>
       <View className="px-4 pt-6 pb-2">
-        <Text className="text-2xl font-bold text-gray-900 tracking-tight">
-          Welcome, {customer?.name?.split(' ')[0] || 'Guest'} 👋
+        <Text className={`text-2xl font-bold tracking-tight ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+          {t('welcome')}, {customer?.name?.split(' ')[0] || 'Guest'} 👋
         </Text>
-        <Text className="text-gray-500 mt-1">What would you like to order today?</Text>
+        <Text className={`mt-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>What would you like to order today?</Text>
       </View>
 
       {/* Active Events Banner List */}
@@ -68,7 +72,7 @@ export default function HomeScreen({ navigation }) {
               className="w-72 h-36 rounded-3xl mr-4 overflow-hidden shadow-sm border border-gray-100 elevation-2 relative"
             >
               {event.image && (
-                <Image source={{ uri: event.image.startsWith('http') ? event.image : `http://localhost:5000${event.image}` }} className="absolute inset-0 w-full h-full" resizeMode="cover" />
+                <Image source={{ uri: event.image.startsWith('http') ? event.image : `${BASE_URL}${event.image}` }} className="absolute inset-0 w-full h-full" resizeMode="cover" />
               )}
               <View className="absolute inset-0 bg-black/40 p-4 justify-end">
                 <Text className="text-white text-2xl font-black">{event.name}</Text>
@@ -85,10 +89,10 @@ export default function HomeScreen({ navigation }) {
             <TouchableOpacity 
               key={cat}
               onPress={() => setSelectedCategory(cat)}
-              className={`mr-3 px-5 py-2.5 rounded-xl border ${selectedCategory === cat ? 'bg-green-600 border-green-600 shadow-sm' : 'bg-white border-gray-200'}`}
+              className={`mr-3 px-5 py-2.5 rounded-xl border ${selectedCategory === cat ? 'bg-green-600 border-green-600 shadow-sm' : isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}
             >
-              <Text className={`font-semibold ${selectedCategory === cat ? 'text-white' : 'text-gray-700'}`}>
-                {cat}
+              <Text className={`font-semibold ${selectedCategory === cat ? 'text-white' : isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                {cat === 'All' ? t('all_categories') : cat}
               </Text>
             </TouchableOpacity>
           ))}
@@ -99,14 +103,14 @@ export default function HomeScreen({ navigation }) {
 
   if (loading) {
     return (
-      <View className="flex-1 justify-center items-center bg-gray-50">
+      <View className={`flex-1 justify-center items-center ${isDarkMode ? 'bg-slate-900' : 'bg-gray-50'}`}>
         <ActivityIndicator size="large" color="#16a34a" />
       </View>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
+    <SafeAreaView className={`flex-1 ${isDarkMode ? 'bg-slate-900' : 'bg-gray-50'}`}>
       <FlatList 
         data={filteredProducts}
         keyExtractor={item => item._id}

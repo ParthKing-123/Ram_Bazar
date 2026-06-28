@@ -190,11 +190,8 @@ export const updateCustomer = async (req, res) => {
     if (phone)   customer.phone   = phone;
     if (profileImage !== undefined) customer.profileImage = profileImage;
 
-    // Profile completion reward
-    if (!customer.profilePointsAwarded && customer.email && customer.profileImage) {
-      customer.points += 100;
-      customer.profilePointsAwarded = true;
-    }
+    // We no longer auto-award profile points here.
+    // The user must manually claim them in the Rewards Screen.
 
     const updated = await customer.save();
 
@@ -242,6 +239,43 @@ export const getCustomer = async (req, res) => {
       referralCode: customer.referralCode,
       points: customer.points,
       coupons: customer.coupons,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Claim reward points
+// @route   POST /api/customers/:id/claim
+// @access  Private
+export const claimReward = async (req, res) => {
+  try {
+    const { task } = req.body;
+    const customer = await Customer.findById(req.params.id);
+
+    if (!customer) {
+      return res.status(404).json({ message: 'Customer not found.' });
+    }
+
+    if (task === 'profile') {
+      if (customer.profilePointsAwarded) {
+        return res.status(400).json({ message: 'Profile points already claimed.' });
+      }
+      if (!customer.email || !customer.profileImage) {
+        return res.status(400).json({ message: 'Profile not complete yet.' });
+      }
+      
+      customer.points += 100;
+      customer.profilePointsAwarded = true;
+    }
+
+    // You can add more tasks here (e.g. 'firstOrder')
+
+    const updated = await customer.save();
+
+    res.status(200).json({
+      points: updated.points,
+      profilePointsAwarded: updated.profilePointsAwarded
     });
   } catch (error) {
     res.status(500).json({ message: error.message });

@@ -1,13 +1,18 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Image, Share } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Image, Share, Animated, Easing } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronLeft, Gift, Award, Star, Ticket, CheckCircle, ChevronRight, Target } from 'lucide-react-native';
+import { ChevronLeft, Gift, Award, Star, Ticket, CheckCircle, ChevronRight, Target, Sparkles } from 'lucide-react-native';
 import useCustomerStore from '../../store/useCustomerStore';
 import api from '../../services/api';
 
 export default function RewardsScreen({ navigation }) {
   const { customer, setCustomer } = useCustomerStore();
   const [loading, setLoading] = useState(false);
+  const [claimingState, setClaimingState] = useState(null); // id of task being claimed
+
+  const floatingAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const opacityAnim = useRef(new Animated.Value(0)).current;
 
   // Auto-refresh customer data on load
   useEffect(() => {
@@ -34,8 +39,78 @@ export default function RewardsScreen({ navigation }) {
   const coupons = customer.coupons || [];
   const progressPercentage = Math.min((points / 500) * 100, 100);
 
+  const triggerClaimAnimation = () => {
+    // Reset
+    floatingAnim.setValue(0);
+    scaleAnim.setValue(0.5);
+    opacityAnim.setValue(1);
+
+    Animated.parallel([
+      Animated.timing(floatingAnim, {
+        toValue: -150, // Float up 150px
+        duration: 1500,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1.5,
+        friction: 4,
+        tension: 50,
+        useNativeDriver: true,
+      }),
+      Animated.sequence([
+        Animated.delay(800),
+        Animated.timing(opacityAnim, {
+          toValue: 0,
+          duration: 700,
+          useNativeDriver: true,
+        })
+      ])
+    ]).start();
+  };
+
+  const handleClaim = async (taskId, taskApiString) => {
+    try {
+      setClaimingState(taskId);
+      const res = await api.post(`/customers/${customer._id}/claim`, { task: taskApiString });
+      
+      triggerClaimAnimation();
+      
+      // Update local state to reflect new points
+      setCustomer({ ...customer, points: res.data.points, profilePointsAwarded: res.data.profilePointsAwarded });
+    } catch (error) {
+      console.error('Failed to claim:', error);
+    } finally {
+      setTimeout(() => setClaimingState(null), 1500); // Give animation time to play
+    }
+  };
+
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
+    <SafeAreaView className="flex-1 bg-gray-50 relative">
+      {/* Floating Animation Layer */}
+      <Animated.View 
+        pointerEvents="none"
+        style={{
+          position: 'absolute',
+          top: '40%',
+          left: 0,
+          right: 0,
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 100,
+          opacity: opacityAnim,
+          transform: [
+            { translateY: floatingAnim },
+            { scale: scaleAnim }
+          ]
+        }}
+      >
+        <View className="bg-green-500 rounded-full px-6 py-3 shadow-lg flex-row items-center border-4 border-green-300">
+          <Sparkles size={24} color="white" className="mr-2" />
+          <Text className="text-white font-black text-3xl">+100</Text>
+        </View>
+      </Animated.View>
+
       <View className="bg-white border-b border-gray-200 shadow-sm elevation-2 pb-4 pt-4 px-4 flex-row items-center">
         <TouchableOpacity onPress={() => navigation.goBack()} className="mr-4">
           <ChevronLeft size={28} color="#111827" />
@@ -83,7 +158,9 @@ export default function RewardsScreen({ navigation }) {
               description: 'Add your email & photo',
               points: '+100',
               completed: customer.profilePointsAwarded,
-              action: () => navigation.navigate('Home', { screen: 'ProfileTab' })
+              claimable: (!customer.profilePointsAwarded && customer.email && customer.profileImage),
+              action: () => navigation.navigate('Home', { screen: 'ProfileTab' }),
+              claimAction: () => handleClaim(1, 'profile')
             },
             {
               id: 2,
@@ -172,24 +249,34 @@ export default function RewardsScreen({ navigation }) {
           ].map((task, index) => (
             <TouchableOpacity 
               key={task.id} 
-              onPress={task.completed ? null : task.action}
-              activeOpacity={task.completed ? 1 : 0.7}
-              className={`bg-white p-4 rounded-2xl shadow-sm border mb-3 flex-row items-center ${task.completed ? 'border-green-200 bg-green-50/30' : 'border-gray-100'}`}
+              onPress={task.completed || task.claimable ? null : task.action}
+              activeOpacity={task.completed || task.claimable ? 1 : 0.7}
+              className={`bg-white p-4 rounded-2xl shadow-sm border mb-3 flex-row items-center ${task.completed ? 'border-green-200 bg-green-50/30' : task.claimable ? 'border-yellow-300 bg-yellow-50' : 'border-gray-100'}`}
             >
-              <View className={`w-12 h-12 rounded-full items-center justify-center mr-4 ${task.completed ? 'bg-green-100' : 'bg-blue-50'}`}>
-                {task.completed ? <CheckCircle size={24} color="#16a34a" /> : <Target size={24} color="#3b82f6" />}
+              <View className={`w-12 h-12 rounded-full items-center justify-center mr-4 ${task.completed ? 'bg-green-100' : task.claimable ? 'bg-yellow-100' : 'bg-blue-50'}`}>
+                {task.completed ? <CheckCircle size={24} color="#16a34a" /> : task.claimable ? <Gift size={24} color="#d97706" /> : <Target size={24} color="#3b82f6" />}
               </View>
               <View className="flex-1">
-                <Text className={`font-black text-base ${task.completed ? 'text-green-800 line-through' : 'text-gray-900'}`}>{task.title}</Text>
-                <Text className="text-gray-500 text-xs mt-0.5 font-medium">{task.description}</Text>
+                <Text className={`font-black text-base ${task.completed ? 'text-green-800 line-through' : task.claimable ? 'text-yellow-800' : 'text-gray-900'}`}>{task.title}</Text>
+                <Text className={`${task.claimable ? 'text-yellow-600' : 'text-gray-500'} text-xs mt-0.5 font-medium`}>{task.description}</Text>
               </View>
               <View className="items-end ml-2">
-                {task.completed ? (
+                {task.claimable ? (
+                  <TouchableOpacity 
+                    onPress={task.claimAction}
+                    disabled={claimingState === task.id}
+                    className="bg-yellow-400 px-4 py-2 rounded-xl shadow-sm flex-row items-center"
+                  >
+                    {claimingState === task.id ? <ActivityIndicator size="small" color="#fff" /> : <Text className="font-bold text-yellow-900">Claim</Text>}
+                  </TouchableOpacity>
+                ) : task.completed ? (
                   <Text className="text-green-600 font-bold text-xs uppercase tracking-wider mb-1">Done</Text>
                 ) : (
-                  <Text className="text-blue-600 font-black text-sm mb-1">{task.points}</Text>
+                  <>
+                    <Text className="text-blue-600 font-black text-sm mb-1">{task.points}</Text>
+                    <ChevronRight size={16} color="#9ca3af" />
+                  </>
                 )}
-                {!task.completed && <ChevronRight size={16} color="#9ca3af" />}
               </View>
             </TouchableOpacity>
           ))}

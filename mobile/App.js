@@ -19,6 +19,8 @@ import CheckoutScreen from './src/screens/customer/CheckoutScreen';
 import EventDetailsScreen from './src/screens/customer/EventDetailsScreen';
 import RewardsScreen from './src/screens/customer/RewardsScreen';
 import useCustomerStore from './src/store/useCustomerStore';
+import useThemeStore from './src/store/useThemeStore';
+import { View } from 'react-native';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -72,6 +74,7 @@ function MainTabNavigator() {
 
 export default function App() {
   const { initCustomer, isInitialized } = useCustomerStore();
+  const { isDarkMode } = useThemeStore();
 
   useEffect(() => {
     initCustomer();
@@ -80,9 +83,10 @@ export default function App() {
   if (!isInitialized) return null; // Or a splash screen
 
   return (
-    <SafeAreaProvider>
-      <NavigationContainer>
-        <StatusBar style="auto" />
+    <View className={`flex-1 ${isDarkMode ? 'dark bg-slate-900' : 'bg-white'}`}>
+      <SafeAreaProvider>
+        <NavigationContainer>
+          <StatusBar style={isDarkMode ? 'light' : 'dark'} />
         <Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Signup" component={SignupScreen} />
@@ -107,5 +111,6 @@ export default function App() {
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>
+    </View>
   );
 }

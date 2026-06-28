@@ -3,7 +3,7 @@ import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, Alert, TextI
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import { Plus, Edit2, Trash2, X, Image as ImageIcon } from 'lucide-react-native';
-import api from '../../services/api';
+import api, { BASE_URL } from '../../services/api';
 
 const CATEGORIES = ['Grocery', 'Provision', 'Household', 'Loose Grocery', 'Travel Accessories'];
 const UNITS = ['1 Piece', '1 kg', '500 g', '250 g', '1 L', '500 ml', '1 Dozen', '1 Pack'];
@@ -155,7 +155,7 @@ export default function AdminProducts() {
     <View className="bg-white p-3 rounded-2xl shadow-sm mb-3 border border-gray-100 flex-row items-center">
       <View className="w-14 h-14 bg-gray-100 rounded-xl mr-3 overflow-hidden border border-gray-200">
         {item.image ? (
-          <Image source={{ uri: item.image.startsWith('http') ? item.image : `http://localhost:5000${item.image}` }} className="w-full h-full" resizeMode="cover" />
+          <Image source={{ uri: item.image.startsWith('http') ? item.image : `${BASE_URL}${item.image}` }} className="w-full h-full" resizeMode="cover" />
         ) : (
           <View className="flex-1 items-center justify-center">
             <ImageIcon size={20} color="#9ca3af" />
@@ -223,7 +223,7 @@ export default function AdminProducts() {
                 {imageFile ? (
                    <Image source={{ uri: imageFile.uri }} className="w-full h-full" resizeMode="cover" />
                 ) : formData.image ? (
-                   <Image source={{ uri: formData.image.startsWith('http') ? formData.image : `http://localhost:5000${formData.image}` }} className="w-full h-full" resizeMode="cover" />
+                   <Image source={{ uri: formData.image.startsWith('http') ? formData.image : `${BASE_URL}${formData.image}` }} className="w-full h-full" resizeMode="cover" />
                 ) : (
                    <View className="items-center">
                      <ImageIcon size={32} color="#9ca3af" />

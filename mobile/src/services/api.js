@@ -1,8 +1,9 @@
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 
-// Use local network IP since we are testing on a physical device
-const API_URL = 'http://10.100.19.61:5000/api';
+// Use production Render URL
+export const BASE_URL = 'https://padmavati-backend-gqua.onrender.com';
+export const API_URL = `${BASE_URL}/api`;
 
 const api = axios.create({
   baseURL: API_URL,
