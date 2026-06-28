@@ -8,7 +8,7 @@ import { getImageUrl } from '../services/api';
 export default function ProductCard({ product }) {
   const { addToCart } = useCartStore();
   const { isDarkMode } = useThemeStore();
-  const { t } = useLanguageStore();
+  const { t, language } = useLanguageStore();
   
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
@@ -45,7 +45,7 @@ export default function ProductCard({ product }) {
         />
       )}
       <Text className={`font-semibold text-base ${isDarkMode ? 'text-white' : 'text-gray-900'}`} numberOfLines={1}>
-        {product.name}
+        {language === 'mr' && product.name_mr ? product.name_mr : product.name}
       </Text>
       <Text className={`text-xs mt-1 mb-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>{product.unit || '1 Piece'}</Text>
       <Text className="text-lg font-bold text-green-500 mb-3">₹{product.price}</Text>

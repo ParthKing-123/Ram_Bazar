@@ -3,10 +3,12 @@ import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Image, Sha
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Gift, Award, Star, Ticket, CheckCircle, ChevronRight, Target, Sparkles } from 'lucide-react-native';
 import useCustomerStore from '../../store/useCustomerStore';
+import useLanguageStore from '../../store/useLanguageStore';
 import api from '../../services/api';
 
 export default function RewardsScreen({ navigation }) {
   const { customer, setCustomer } = useCustomerStore();
+  const { t } = useLanguageStore();
   const [loading, setLoading] = useState(false);
   const [claimingState, setClaimingState] = useState(null); // id of task being claimed
 
@@ -115,8 +117,8 @@ export default function RewardsScreen({ navigation }) {
         <TouchableOpacity onPress={() => navigation.goBack()} className="mr-4">
           <ChevronLeft size={28} color="#111827" />
         </TouchableOpacity>
-        <Text className="text-2xl font-black text-gray-900 tracking-tight flex-1">Rewards</Text>
-        <TouchableOpacity onPress={fetchProfile} className="bg-gray-100 p-2 rounded-full">
+        <Text className="text-xl font-bold text-gray-900">{t('rewards')}</Text>
+        <TouchableOpacity onPress={fetchProfile} className="bg-gray-100 p-2 rounded-full ml-auto">
            {loading ? <ActivityIndicator size="small" color="#16a34a" /> : <Star size={20} color="#f59e0b" />}
         </TouchableOpacity>
       </View>
@@ -127,35 +129,35 @@ export default function RewardsScreen({ navigation }) {
           <View className="absolute -right-10 -top-10 opacity-10">
             <Award size={150} color="#ffffff" />
           </View>
-          <Text className="text-green-100 font-bold uppercase tracking-widest text-xs mb-1">Your Balance</Text>
+          <Text className="text-green-100 font-bold uppercase tracking-widest text-xs mb-1">{t('total')}</Text>
           <View className="flex-row items-end">
              <Text className="text-white text-5xl font-black">{points}</Text>
-             <Text className="text-green-200 text-lg font-bold ml-2 mb-2">Points</Text>
+             <Text className="text-green-200 text-lg font-bold ml-2 mb-2">{t('points')}</Text>
           </View>
           
           <View className="mt-6">
             <View className="flex-row justify-between mb-2">
-              <Text className="text-green-50 text-xs font-semibold">Progress to ₹50 Coupon</Text>
+              <Text className="text-green-50 text-xs font-semibold">{t('progress_to_coupon')}</Text>
               <Text className="text-green-50 text-xs font-bold">{points}/500</Text>
             </View>
             <View className="h-3 bg-black/20 rounded-full overflow-hidden">
               <View style={{ width: `${progressPercentage}%` }} className="h-full bg-yellow-400 rounded-full" />
             </View>
-            <Text className="text-green-100 text-xs mt-2 italic">Earn 50 points on your first order. 100 points for completing your profile!</Text>
+            <Text className="text-green-100 text-xs mt-2 italic">{t('rewards_info')}</Text>
           </View>
         </View>
 
         {/* Tasks Section */}
         <Text className="text-lg font-black text-gray-900 mb-3 px-1 flex-row items-center">
-           Earn More Points
+           {t('earn_more_points')}
         </Text>
         
         <View className="mb-6">
           {[
             {
               id: 1,
-              title: 'Complete Profile',
-              description: 'Add your email & photo',
+              title: t('complete_profile'),
+              description: t('add_email'),
               points: '+100',
               completed: customer.profilePointsAwarded,
               claimable: (!customer.profilePointsAwarded && customer.email && customer.profileImage),
@@ -164,24 +166,24 @@ export default function RewardsScreen({ navigation }) {
             },
             {
               id: 2,
-              title: 'First Order',
-              description: 'Make your very first purchase',
+              title: t('first_order'),
+              description: t('place_order'),
               points: '+50',
               completed: customer.firstOrderPointsAwarded,
               action: () => navigation.navigate('Home', { screen: 'HomeTab' })
             },
             {
               id: 3,
-              title: 'Rate a Delivery',
-              description: 'Give feedback on your recent order',
+              title: t('rate_delivery'),
+              description: t('give_feedback'),
               points: '+20',
               completed: false, // Placeholder logic
               action: () => navigation.navigate('Home', { screen: 'OrdersTab' })
             },
             {
               id: 4,
-              title: 'Refer a Friend',
-              description: 'Share your referral code with a friend',
+              title: t('refer_friend'),
+              description: t('share_code'),
               points: '+200',
               completed: false,
               action: async () => {
@@ -267,10 +269,10 @@ export default function RewardsScreen({ navigation }) {
                     disabled={claimingState === task.id}
                     className="bg-yellow-400 px-4 py-2 rounded-xl shadow-sm flex-row items-center"
                   >
-                    {claimingState === task.id ? <ActivityIndicator size="small" color="#fff" /> : <Text className="font-bold text-yellow-900">Claim</Text>}
+                    {claimingState === task.id ? <ActivityIndicator size="small" color="#fff" /> : <Text className="font-bold text-yellow-900">{t('claim')}</Text>}
                   </TouchableOpacity>
                 ) : task.completed ? (
-                  <Text className="text-green-600 font-bold text-xs uppercase tracking-wider mb-1">Done</Text>
+                  <Text className="text-green-600 font-bold text-xs uppercase tracking-wider mb-1">{t('done')}</Text>
                 ) : (
                   <>
                     <Text className="text-blue-600 font-black text-sm mb-1">{task.points}</Text>

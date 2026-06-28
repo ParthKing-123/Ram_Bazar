@@ -7,9 +7,10 @@ export const API_URL = `${BASE_URL}/api`;
 
 export const getImageUrl = (url) => {
   if (!url) return '';
-  // If the database has an old localhost URL, replace it with the live BASE_URL
-  if (url.includes('localhost')) {
-    return url.replace(/http:\/\/localhost:\d+/, BASE_URL);
+  // If the database has an old localhost or Wi-Fi URL, replace everything before /uploads/ with BASE_URL
+  if (url.includes('/uploads/')) {
+    const path = url.substring(url.indexOf('/uploads/'));
+    return `${BASE_URL}${path}`;
   }
   if (url.startsWith('http')) return url;
   return `${BASE_URL}${url}`;
