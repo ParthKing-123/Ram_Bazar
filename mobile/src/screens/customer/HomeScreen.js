@@ -7,7 +7,7 @@ import useCartStore from '../../store/useCartStore';
 import useSearchStore from '../../store/useSearchStore';
 import useLanguageStore from '../../store/useLanguageStore';
 import useThemeStore from '../../store/useThemeStore';
-import api, { BASE_URL } from '../../services/api';
+import api, { getImageUrl } from '../../services/api';
 import ProductCard from '../../components/ProductCard';
 
 const CATEGORIES = ['All', 'Grocery', 'Provision', 'Household', 'Loose Grocery', 'Travel Accessories'];
@@ -72,7 +72,7 @@ export default function HomeScreen({ navigation }) {
               className="w-72 h-36 rounded-3xl mr-4 overflow-hidden shadow-sm border border-gray-100 elevation-2 relative"
             >
               {event.image && (
-                <Image source={{ uri: event.image.startsWith('http') ? event.image : `${BASE_URL}${event.image}` }} className="absolute inset-0 w-full h-full" resizeMode="cover" />
+                <Image source={{ uri: getImageUrl(event.image) }} className="absolute inset-0 w-full h-full" resizeMode="cover" />
               )}
               <View className="absolute inset-0 bg-black/40 p-4 justify-end">
                 <Text className="text-white text-2xl font-black">{event.name}</Text>

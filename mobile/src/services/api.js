@@ -5,6 +5,16 @@ import * as SecureStore from 'expo-secure-store';
 export const BASE_URL = 'https://padmavati-backend-gqua.onrender.com';
 export const API_URL = `${BASE_URL}/api`;
 
+export const getImageUrl = (url) => {
+  if (!url) return '';
+  // If the database has an old localhost URL, replace it with the live BASE_URL
+  if (url.includes('localhost')) {
+    return url.replace(/http:\/\/localhost:\d+/, BASE_URL);
+  }
+  if (url.startsWith('http')) return url;
+  return `${BASE_URL}${url}`;
+};
+
 const api = axios.create({
   baseURL: API_URL,
   headers: {

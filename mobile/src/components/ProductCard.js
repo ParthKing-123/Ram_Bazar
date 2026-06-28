@@ -3,13 +3,7 @@ import { View, Text, Image, TouchableOpacity, Animated } from 'react-native';
 import useCartStore from '../store/useCartStore';
 import useThemeStore from '../store/useThemeStore';
 import useLanguageStore from '../store/useLanguageStore';
-import { BASE_URL } from '../services/api';
-
-const getImageUrl = (url) => {
-  if (!url) return '';
-  if (url.startsWith('http')) return url;
-  return `${BASE_URL}${url}`;
-};
+import { getImageUrl } from '../services/api';
 
 export default function ProductCard({ product }) {
   const { addToCart } = useCartStore();

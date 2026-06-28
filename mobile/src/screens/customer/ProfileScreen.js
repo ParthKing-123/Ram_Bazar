@@ -6,7 +6,7 @@ import * as ImagePicker from 'expo-image-picker';
 import useCustomerStore from '../../store/useCustomerStore';
 import useThemeStore from '../../store/useThemeStore';
 import useLanguageStore from '../../store/useLanguageStore';
-import api, { BASE_URL } from '../../services/api';
+import api, { getImageUrl } from '../../services/api';
 
 export default function ProfileScreen({ navigation }) {
   const { customer, clearCustomer, setCustomer } = useCustomerStore();
@@ -126,7 +126,7 @@ export default function ProfileScreen({ navigation }) {
             {imageFile ? (
                <Image source={{ uri: imageFile.uri }} className="w-full h-full rounded-full" resizeMode="cover" />
             ) : formData.profileImage ? (
-               <Image source={{ uri: formData.profileImage.startsWith('http') ? formData.profileImage : `${BASE_URL}${formData.profileImage}` }} className="w-full h-full rounded-full" resizeMode="cover" />
+               <Image source={{ uri: getImageUrl(formData.profileImage) }} className="w-full h-full rounded-full" resizeMode="cover" />
             ) : (
                <Text className="text-5xl font-black text-green-700">
                  {customer.name?.charAt(0).toUpperCase()}
