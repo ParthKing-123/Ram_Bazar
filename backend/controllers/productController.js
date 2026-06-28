@@ -1,4 +1,5 @@
 import Product from '../models/Product.js';
+import translate from 'google-translate-api-x';
 
 // @desc    Fetch all products
 // @route   GET /api/products
@@ -18,13 +19,31 @@ export const getProducts = async (req, res) => {
 export const createProduct = async (req, res) => {
   try {
     const { name, price, stock, image, category, unit, variants } = req.body;
+    
+    let name_mr = '';
+    let category_mr = '';
+    
+    try {
+      if (name) {
+        const resName = await translate(name, { to: 'mr' });
+        name_mr = resName.text;
+      }
+      if (category) {
+        const resCat = await translate(category, { to: 'mr' });
+        category_mr = resCat.text;
+      }
+    } catch (translateError) {
+      console.error('Translation error:', translateError);
+    }
 
     const product = new Product({
       name,
+      name_mr,
       price,
       stock,
       image,
       category,
+      category_mr,
       unit,
       variants
     });
@@ -46,6 +65,20 @@ export const updateProduct = async (req, res) => {
     const product = await Product.findById(req.params.id);
 
     if (product) {
+      if (name && name !== product.name) {
+        try {
+          const resName = await translate(name, { to: 'mr' });
+          product.name_mr = resName.text;
+        } catch (e) { console.error(e); }
+      }
+      
+      if (category && category !== product.category) {
+        try {
+          const resCat = await translate(category, { to: 'mr' });
+          product.category_mr = resCat.text;
+        } catch (e) { console.error(e); }
+      }
+
       product.name = name || product.name;
       product.price = price || product.price;
       product.stock = stock !== undefined ? stock : product.stock;

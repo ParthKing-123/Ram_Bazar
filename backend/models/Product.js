@@ -5,6 +5,10 @@ const productSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  name_mr: {
+    type: String, // Marathi translation
+    default: ''
+  },
   price: {
     type: Number,
     required: true,
@@ -22,6 +26,10 @@ const productSchema = new mongoose.Schema({
     enum: ['Grocery', 'Provision', 'Household', 'Loose Grocery', 'Travel Accessories'],
     default: 'Grocery',
     required: true
+  },
+  category_mr: {
+    type: String, // Marathi translation of category
+    default: ''
   },
   variants: [{
     unit: { type: String, required: true },
